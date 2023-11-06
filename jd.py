@@ -417,7 +417,7 @@ def is_float(string):
         return False
 
 if __name__ == "__main__":
-    keyword = urllib.parse.quote("华为汽车配件")
+    keyword = urllib.parse.quote("华为")
     start_page = 1
     end_page = 100
     [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)

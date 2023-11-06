@@ -46,7 +46,7 @@ def scrape_multiple_pages(keyword, start_page, end_page, supplement):
     # 格式化时间字符串
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
     # 构建文件名
-    file_name = f"data/tb/淘宝_{urllib.parse.unquote(keyword)}_{time_string}.xlsx"
+    file_name = f"data/tm/天猫_{urllib.parse.unquote(keyword)}_{time_string}.xlsx"
     if supplement == True:
         file_name = f"data/tb/淘宝_华为手表_2023-11-06_16-01-12_(240 of 240).xlsx"
     total_num = 0
@@ -112,7 +112,7 @@ def scrape_multiple_pages(keyword, start_page, end_page, supplement):
     driver.quit()
     print('与现有浏览器连接断开')
     # 重命名文件
-    new_file_name = f"data/tb/淘宝_{urllib.parse.unquote(keyword)}_{time_string}_({record_num} of {total_num}).xlsx"
+    new_file_name = f"data/tm/天猫_{urllib.parse.unquote(keyword)}_{time_string}_({record_num} of {total_num}).xlsx"
     try:
         os.rename(file_name, new_file_name)
         print(f"已将文件 {file_name} 重命名为 {new_file_name}")
@@ -157,7 +157,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
     # 创建 Beautiful Soup 对象
     soup = BeautifulSoup(html, "html.parser")
     # 使用 select 方法查找指定的元素
-    elements = soup.select('div.Content--contentInner--QVTcU0M div a.Card--doubleCardWrapper--L2XFE73')
+    elements = soup.select('div.Content--contentInner--QVTcU0M div a.Card--doubleCardWrapperMall--uPmo5Bz')
     print(len(elements))
     try:
         for (index, element) in enumerate(elements, start=1):
@@ -196,7 +196,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 电商平台
             try:
                 last_column+=1
-                platform_name = '淘宝'
+                platform_name = '天猫'
                 # sheet.column_dimensions[get_column_letter(last_column)].width = len(platform_name) / 1.5
                 sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                 sheet.row_dimensions[last_row].height = row_height
@@ -460,7 +460,7 @@ def remove_unrecognized_characters(string):
     return ''.join(char for char in string if char.isprintable())
 
 if __name__ == "__main__":
-    keyword = urllib.parse.quote("适用于华为")
+    keyword = urllib.parse.quote("华为汽车配件")
     start_page = 1
     end_page = 100
     supplement = False
