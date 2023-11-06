@@ -4,17 +4,16 @@ from bs4 import BeautifulSoup
 import time
 
 # filename = input("请输入文件名称：")
-filename = "data/jd/京东_华为手表_2023-11-04_11-58-21_(1453 of 2910).xlsx"
+filename = "data/jd/京东_华为_2023-11-05_14-30-39_(1837 of 3000).xlsx"
 workbook = load_workbook(filename)
 sheet = workbook.active
+start_time = time.time()
 
-start_row = 2
+start_row = 1255
 end_row = sheet.max_row
 aim_col = 10
 
-start_row = 801
-
-total = end_row - start_row
+total = end_row - start_row + 1
 current = 0
 
 options = webdriver.FirefoxOptions()
@@ -32,8 +31,8 @@ try:
         tempHTML = driver.execute_script("return document.documentElement.outerHTML")
         tempSoup = BeautifulSoup(tempHTML, "html.parser")
         try:
-            goods_brand_element = tempSoup.select('ul.p-parameter-list')
-            goods_brand = len(goods_brand_element) == 0 and '暂无' or goods_brand_element[0].select('li')[0].get('title')
+            goods_brand_element = tempSoup.find_all('ul',id='parameter-brand')
+            goods_brand = len(goods_brand_element) == 0 and '暂无' or goods_brand_element[0].select('li a')[0].text
             sheet.cell(row=row, column=9, value=goods_brand)
         except:
             workbook.save(filename)
@@ -48,3 +47,10 @@ finally:
     workbook.save(filename)
     driver.quit()
     print('与现有浏览器连接断开')
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"爬虫耗时：{duration:.2f} 秒")
+    print(f"目标数量：{total} 条")
+    print(f"已获取数量：{current} 条")
+    unit = current / (duration / 60)
+    print(f"每分钟爬取数量：{unit:.2f} 条")
