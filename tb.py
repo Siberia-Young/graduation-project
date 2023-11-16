@@ -460,7 +460,7 @@ def remove_unrecognized_characters(string):
     return ''.join(char for char in string if char.isprintable())
 
 if __name__ == "__main__":
-    keyword = urllib.parse.quote("适用于华为")
+    keyword = urllib.parse.quote("华为荣耀")
     start_page = 1
     end_page = 100
     supplement = False

@@ -9,7 +9,7 @@ workbook = load_workbook(filename)
 sheet = workbook.active
 start_time = time.time()
 
-start_row = 1255
+start_row = 2
 end_row = sheet.max_row
 aim_col = 10
 
