@@ -54,7 +54,7 @@ def scrape_multiple_pages(keyword, start_page, end_page, supplement):
 
     workbook = Workbook()
     sheet = workbook.active
-    headers = ['序号', '电商平台', '关键词', '店铺名称', '店铺网址', '店铺经营主体信息', '商品图片', '商品标题', '商品品牌', '商品链接', '单价', '销售量', '商品评论数', '销售额']
+    headers = ['序号', '电商平台', '关键词/产品', '店铺名称(全称)', '店铺网址', '店铺经营主体信息', '商品图片', '商品标题', '实际品牌', '商品链接', '价格(单位：元)', '销售量(单位：件)', '商品评价(单位：个)', '销售额(单位：元)']
     if supplement == False:
         sheet.append(headers)
         for index, cell in enumerate(sheet[1], start=1):
@@ -315,8 +315,8 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 last_column+=1
                 sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                 sheet.row_dimensions[last_row].height = row_height
-                goods_brand = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                goods_brand.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                goods_brand_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                goods_brand_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -460,7 +460,7 @@ def remove_unrecognized_characters(string):
     return ''.join(char for char in string if char.isprintable())
 
 if __name__ == "__main__":
-    keyword = urllib.parse.quote("华为汽车配件")
+    keyword = urllib.parse.quote("华为")
     start_page = 1
     end_page = 100
     supplement = False
