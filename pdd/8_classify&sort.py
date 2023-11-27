@@ -4,8 +4,8 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 3
+file_name = "data/pdd/merge/pdd_2023-11-25_01-47-08_3_经过图片关键词筛选.xlsx"
+num = 8
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
 # 打开需读取的excel表
@@ -45,7 +45,7 @@ try:
             dict[value] = [row]
     # 排序
     def sort_condition(item):
-        return sheet.cell(row=item, column=14).value
+        return int(sheet.cell(row=item, column=14).value)
     for key, val in dict.items():
         val.sort(key=sort_condition, reverse=True)
 except Exception as e:

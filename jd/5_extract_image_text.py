@@ -5,8 +5,8 @@ from openpyxl.utils import get_column_letter
 import time
 import os
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 7
+file_name = "data/jd/京东_华为移动快充_2023-11-20_11-17-29_(5925 of 5970).xlsx"
+num = 5
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
 
 # 打开需读取的excel表
@@ -33,9 +33,16 @@ try:
         value = sheet.cell(row=row, column=7).value
         image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
         if os.path.exists(image_path):
-            result = reader.readtext(image_path, detail = 0, paragraph=True)
-            sheet.cell(row=row, column=16, value=' '.join(result))
-except:
+            try:
+                result = reader.readtext(image_path, detail = 0, paragraph=True)
+                sheet.cell(row=row, column=16, value=' '.join(result))
+            except Exception as e:
+                print(e)
+                print(f'识别出错：{row}')
+        else:
+            print(f'找不到图片路径：{row}')
+except Exception as e:
+    print(e)
     print('出错')
 finally:
     workbook.save(file_name)

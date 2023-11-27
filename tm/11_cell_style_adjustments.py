@@ -5,8 +5,8 @@ from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 import time
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 12
+file_name = "data/tm/需求1.xlsx"
+num = 11
 
 row_height = 40
 column_width = 14
@@ -31,6 +31,7 @@ try:
     total = end_row - start_row + 1
     current = 0
     start_time = time.time()
+    time.sleep(1)
     print(f'\n正在更新单元格样式')
     for row in range(start_row, end_row + 1):
         current+=1
