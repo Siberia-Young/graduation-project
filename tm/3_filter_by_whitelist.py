@@ -5,8 +5,8 @@ import os
 from openpyxl.utils.cell import get_column_letter
 import re
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 8
+file_name = "data/tm/需求2.xlsx"
+num = 3
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
 # 打开需读取的excel表
@@ -23,14 +23,32 @@ first_row = sheet[1]
 for cell in first_row:
     new_sheet[cell.coordinate].value = cell.value
 
-# 筛选出符合条件的行
+# 通过店铺白名单筛选
 try:
-    list = []
-    def check_keywords(text):
-        keywords = ['官方','正品','原厂','原装','专用','授权']
+    def convert_string_to_number(string):
+        if not string:
+            return 0
+        if isinstance(string, int):
+            return string
+        if string.endswith('万+'):
+            number = int(string[:-2]) * 10000
+        elif string.endswith('+'):
+            number = int(string[:-1])
+        else:
+            number = int(string)
+        return number
+    def check_keywords1(text):
+        keywords = ['适用','通用']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
+    def check_keywords2(text):
+        keywords = ['HUAWEI','华为']
+        pattern = '|'.join(keywords)
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        return match is not None
+    list = ['华为官方旗舰店','荣耀官方旗舰店','天天特卖工厂店','天猫超市','绿联数码旗舰店']
+    record_list = []
     start_row = 2
     end_row = sheet.max_row
 
@@ -38,37 +56,36 @@ try:
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在筛选出符合条件的行')
+    print(f'\n正在通过店铺白名单筛选')
     for row in range(start_row, end_row + 1):
-        current+=1
-        res = (total - current) / (current / ((time.time() - start_time) / 60))
-        print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        sentence = sheet.cell(row=row, column=16).value
-        if not sentence is None and check_keywords(sentence):
-            list.append(row)
+        shop_name = sheet.cell(row=row, column=4).value
+        goods_title = sheet.cell(row=row, column=8).value
+        goods_nums = sheet.cell(row=row, column=12).value
+        if convert_string_to_number(goods_nums) >= 100 and shop_name not in list and check_keywords1(goods_title) and check_keywords2(goods_title):
+            record_list.append(row)
 except Exception as e:
     print(e)
-    print('筛选出符合条件的行时出错')
+    print('通过店铺白名单筛选时出错')
 
-# 通过图片文字筛选
+# 记录数据到新表
 try:
     start_row = 2
     end_row = sheet.max_row
 
-    total = len(list)
+    total = len(record_list)
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在通过图片文字筛选')
-    for row in list:
+    print(f'\n正在记录数据到新表')
+    for row in record_list:
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        for cell in sheet[row][:-2]:
+        for cell in sheet[row]:
             new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
-    print('通过图片文字筛选时出错')
+    print('记录数据到新表时出错')
 
 # 处理序号
 try:

@@ -4,8 +4,8 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 4
+file_name = "data/tm/需求2.xlsx"
+num = 8
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
 # 打开需读取的excel表
@@ -22,10 +22,9 @@ first_row = sheet[1]
 for cell in first_row:
     new_sheet[cell.coordinate].value = cell.value
 
-# 通过店铺白名单筛选
+# 分类并排序
 try:
-    list = ['xxx','yyy']
-    record_list = []
+    dict = {}
     start_row = 2
     end_row = sheet.max_row
 
@@ -33,41 +32,53 @@ try:
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在通过店铺白名单筛选')
+    print(f'\n正在分类并排序')
+    # 分类
     for row in range(start_row, end_row + 1):
-        value = sheet.cell(row=row, column=4).value
-        if value in list:
-            record_list.append(row)
+        current+=1
+        res = (total - current) / (current / ((time.time() - start_time) / 60))
+        print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
+        value = sheet.cell(row=row, column=5).value
+        if value in dict:
+            dict[value].append(row)
+        else:
+            dict[value] = [row]
+    # 排序
+    def sort_condition(item):
+        return int(sheet.cell(row=item, column=14).value)
+    for key, val in dict.items():
+        val.sort(key=sort_condition, reverse=True)
 except Exception as e:
     print(e)
-    print('通过店铺白名单筛选时出错')
+    print('分类并排序时出错')
 
-# 记录数据到新表
+# 记录到新表
 try:
     start_row = 2
     end_row = sheet.max_row
 
-    total = len(record_list)
+    total = end_row - start_row + 1
     current = 0
     start_time = time.time()
     time.sleep(1)
     print(f'\n正在记录数据到新表')
-    for row in record_list:
-        current+=1
-        res = (total - current) / (current / ((time.time() - start_time) / 60))
-        print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        for cell in sheet[row]:
-            new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
+    for key, val in dict.items():
+        for row in val:
+            current+=1
+            res = (total - current) / (current / ((time.time() - start_time) / 60))
+            print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
+            for cell in sheet[row]:
+                new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
-    print('记录数据到新表时出错')
+    print('记录到新表时出错')
 
 # 处理序号
 try:
     start_row = 2
     end_row = new_sheet.max_row
 
-    total = total
+    total = end_row - start_row + 1
     current = 0
     start_time = time.time()
     time.sleep(1)

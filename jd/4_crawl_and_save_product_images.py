@@ -3,8 +3,8 @@ import time
 import requests
 import os
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 6
+file_name = "data/pdd/拼多多_华为手表_2023-11-06_18-32-40.xlsx"
+num = 4
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
 
 # 打开需读取的excel表
@@ -27,7 +27,6 @@ try:
     time.sleep(1)
     print(f'\n正在下载图片')
     for row in range(start_row, end_row + 1):
-        time.sleep(0.5)
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")

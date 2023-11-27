@@ -5,19 +5,25 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 import time
 import random
+from selenium.webdriver.common.proxy import Proxy, ProxyType
 
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-file_name = "data/tm/天猫_华为_2023-11-16_21-36-01_(4800 of 4800).xlsx"
-num = 9
+file_name = "data/tm/需求1.xlsx"
+num = 10
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
 sheet = workbook.active
 
+# 创建代理对象
+proxy = Proxy()
+proxy.proxy_type = ProxyType.MANUAL
+proxy.http_proxy = '222.85.6.48:45141'
 # 打开火狐浏览器模拟器
 options = webdriver.FirefoxOptions()
+options.add_argument('--proxy-server={}'.format(proxy.http_proxy))
 driver = webdriver.Remote(command_executor="http://127.0.0.1:4444", options=options)
 
 # options = webdriver.EdgeOptions()
@@ -25,12 +31,13 @@ driver = webdriver.Remote(command_executor="http://127.0.0.1:4444", options=opti
 
 # 爬取详细商品数据
 try:
-    start_row = 382
+    start_row = 2
     end_row = sheet.max_row
 
     total = end_row - start_row + 1
     current = 0
     start_time = time.time()
+    time.sleep(1)
     print(f'\n正在爬取详细商品数据')
     for row in range(start_row, end_row + 1):
         current+=1
@@ -38,7 +45,6 @@ try:
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         goods_link = sheet.cell(row=row, column=10).value
         driver.get(goods_link)
-        time.sleep(random.uniform(3,10))
         tempHTML = driver.execute_script("return document.documentElement.outerHTML")
         tempSoup = BeautifulSoup(tempHTML, "html.parser")
 
