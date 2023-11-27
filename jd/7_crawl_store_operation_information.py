@@ -1,34 +1,26 @@
-from aip import AipOcr
-import ssl
 from selenium import webdriver
 from openpyxl import load_workbook
-from openpyxl.styles import Alignment
-from openpyxl.styles import Font
-from openpyxl.styles import PatternFill
-from openpyxl.utils import get_column_letter
 from bs4 import BeautifulSoup
 import time
-from os import path
-from aip import AipOcr
 import re
-import requests
-import os
 import io
 from PIL import Image
+from datetime import datetime
+from wsgiref.handlers import format_date_time
+from time import mktime
+import hashlib
+import base64
+import hmac
+from urllib.parse import urlencode
+import json
+import requests
 
 
-""" 你的 APPID AK SK """
-APP_ID = '43005493'
-API_KEY = 'u6amXwrG9qBDlvjcR7Vo9cVK'
-SECRET_KEY = 'x5OjaaiUG441KD6IWkpGaGVApOjQb4lg'
+APPId = "b9b55ac3"  # 控制台获取
+APISecret = "NzA4N2QxMDNlZjQzMzk5YjUzYzM5NzM3"  # 控制台获取
+APIKey = "602f362334c3f47d5c626652e91f25dc"  # 控制台获取
 
-client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
-# i = open('OCR/img/code2.png', 'rb')
-# img = i.read()
-# message = client.webImage(img)
-# print(message)
-
-file_name = 'data/jd/merge/merge.xlsx'
+file_name = 'data/jd/merge/需求2_京东.xlsx'
 row_height = 40
 column_width = 14
 
@@ -42,6 +34,59 @@ driver = webdriver.Remote(command_executor="http://127.0.0.1:4444", options=opti
 
 # options = webdriver.FirefoxOptions()
 # driver = webdriver.Firefox(options=options)
+
+class AssembleHeaderException(Exception):
+    def __init__(self, msg):
+        self.message = msg
+
+class Url:
+    def __init__(self, host, path, schema):
+        self.host = host
+        self.path = path
+        self.schema = schema
+        pass
+
+# calculate sha256 and encode to base64
+def sha256base64(data):
+    sha256 = hashlib.sha256()
+    sha256.update(data)
+    digest = base64.b64encode(sha256.digest()).decode(encoding='utf-8')
+    return digest
+
+def parse_url(requset_url):
+    stidx = requset_url.index("://")
+    host = requset_url[stidx + 3:]
+    schema = requset_url[:stidx + 3]
+    edidx = host.index("/")
+    if edidx <= 0:
+        raise AssembleHeaderException("invalid request url:" + requset_url)
+    path = host[edidx:]
+    host = host[:edidx]
+    u = Url(host, path, schema)
+    return u
+
+# build websocket auth request url
+def assemble_ws_auth_url(requset_url, method="POST", api_key="", api_secret=""):
+    u = parse_url(requset_url)
+    host = u.host
+    path = u.path
+    now = datetime.now()
+    date = format_date_time(mktime(now.timetuple()))
+    # date = "Thu, 12 Dec 2019 01:57:27 GMT"
+    signature_origin = "host: {}\ndate: {}\n{} {} HTTP/1.1".format(host, date, method, path)
+    signature_sha = hmac.new(api_secret.encode('utf-8'), signature_origin.encode('utf-8'),
+                             digestmod=hashlib.sha256).digest()
+    signature_sha = base64.b64encode(signature_sha).decode(encoding='utf-8')
+    authorization_origin = "api_key=\"%s\", algorithm=\"%s\", headers=\"%s\", signature=\"%s\"" % (
+        api_key, "hmac-sha256", "host date request-line", signature_sha)
+    authorization = base64.b64encode(authorization_origin.encode('utf-8')).decode(encoding='utf-8')
+    values = {
+        "host": host,
+        "date": date,
+        "authorization": authorization
+    }
+
+    return requset_url + "?" + urlencode(values)
 
 # 分类
 try:
@@ -121,18 +166,50 @@ try:
                     element_screenshot.save('temp/element_screenshot.png')
                     temp_image_path = 'temp/element_screenshot.png'
 
-                    i = open(temp_image_path, 'rb')
-                    img = i.read()
-                    message = client.webImage(img)
-                    print(message)
-                    if len(message['words_result']) == 0:
+                    with open(temp_image_path, "rb") as f:
+                        imageBytes = f.read()
+
+                    url = 'https://api.xf-yun.com/v1/private/sf8e6aca1'
+
+                    body = {
+                        "header": {
+                            "app_id": APPId,
+                            "status": 3
+                        },
+                        "parameter": {
+                            "sf8e6aca1": {
+                                "category": "ch_en_public_cloud",
+                                "result": {
+                                    "encoding": "utf8",
+                                    "compress": "raw",
+                                    "format": "json"
+                                }
+                            }
+                        },
+                        "payload": {
+                            "sf8e6aca1_data_1": {
+                                "encoding": "jpg",
+                                "image": str(base64.b64encode(imageBytes), 'UTF-8'),
+                                "status": 3
+                            }
+                        }
+                    }
+
+                    request_url = assemble_ws_auth_url(url, "POST", APIKey, APISecret)
+                    headers = {'content-type': "application/json", 'host': 'api.xf-yun.com', 'app_id': APPId}
+                    response = requests.post(request_url, data=json.dumps(body), headers=headers)
+                    tempResult = json.loads(response.content.decode())
+                    finalResult = base64.b64decode(tempResult['payload']['result']['text']).decode()
+                    finalResult = json.loads(finalResult.replace(" ", "").replace("\n", "").replace("\t", "").strip())    
+                    try:
+                        code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
+                    except:
                         print('遇到验证码')
+                        driver.get(url)
                         time.sleep(5)
                         continue
-                    code = message['words_result'][0]['words'].replace('-', '').replace(' ', '')
-                    
-
                     verifyCodeInput = driver.find_element("xpath","//input[@id='verifyCode']")
+                    driver.execute_script("arguments[0].setAttribute('autocomplete', 'off')", verifyCodeInput)
                     verifyCodeInput.send_keys(code)
                     time.sleep(2)
                     sutmit = driver.find_element("xpath","//button[contains(@class, 'btn') and @type='submit']")
