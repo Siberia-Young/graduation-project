@@ -5,7 +5,7 @@ import os
 from openpyxl.utils.cell import get_column_letter
 import re
 
-file_name = "data/jd/京东_华为移动快充_2023-11-20_11-17-29_(5925 of 5970).xlsx"
+file_name = "data/jd/merge/184.xlsx"
 num = 6
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
@@ -27,7 +27,7 @@ for cell in first_row:
 try:
     list = []
     def check_keywords_image_text(text):
-        keywords = ['华为','HUAWEI']
+        keywords = ['官方同款']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -50,7 +50,7 @@ try:
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         sentence = sheet.cell(row=row, column=16).value
         sentence2 = sheet.cell(row=row, column=8).value
-        if not sentence is None and check_keywords_image_text(sentence) and check_keywords_goods_name(sentence2):
+        if not sentence is None and check_keywords_image_text(sentence):
             list.append(row)
 except Exception as e:
     print(e)

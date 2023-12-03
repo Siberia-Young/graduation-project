@@ -20,7 +20,7 @@ APPId = "b9b55ac3"  # 控制台获取
 APISecret = "NzA4N2QxMDNlZjQzMzk5YjUzYzM5NzM3"  # 控制台获取
 APIKey = "602f362334c3f47d5c626652e91f25dc"  # 控制台获取
 
-file_name = 'data/jd/merge/需求2_京东.xlsx'
+file_name = 'data/jd/merge/1345.xlsx'
 row_height = 40
 column_width = 14
 
@@ -85,7 +85,6 @@ def assemble_ws_auth_url(requset_url, method="POST", api_key="", api_secret=""):
         "date": date,
         "authorization": authorization
     }
-
     return requset_url + "?" + urlencode(values)
 
 # 分类
@@ -202,7 +201,12 @@ try:
                     finalResult = base64.b64decode(tempResult['payload']['result']['text']).decode()
                     finalResult = json.loads(finalResult.replace(" ", "").replace("\n", "").replace("\t", "").strip())    
                     try:
-                        code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
+                        temp_list = finalResult['pages'][0]['lines']
+                        code_list = []
+                        for item in temp_list:
+                            code_list.append(item['words'][0]['content'])
+                        # code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
+                        code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
                     except:
                         print('遇到验证码')
                         driver.get(url)

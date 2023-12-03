@@ -14,23 +14,27 @@ import urllib.parse
 import time
 import random
 import datetime
-import re
+import json
 
-min_delay = 5  # 最小延迟时间（单位：秒）
-max_delay = 8  # 最大延迟时间（单位：秒）
+min_delay = 3  # 最小延迟时间（单位：秒）
+max_delay = 5  # 最大延迟时间（单位：秒）
 
 row_height = 40
 column_width = 14
 
 def login(driver):
     print('登录')
-    driver.get('https://login.taobao.com/')
-    time.sleep(45)
+    driver.get('https://passport.suning.com/ids/login')
+    time.sleep(30)
 
 def scrape_multiple_pages(keyword, start_page, end_page):
     options = webdriver.FirefoxOptions()
     driver = webdriver.Remote(
         command_executor="http://127.0.0.1:4444", options=options)
+    
+    # options = webdriver.FirefoxOptions()
+    # driver = webdriver.Firefox(options=options)
+
     # 创建带有Selenium Wire的Firefox WebDriver对象
     # options = webdriver.FirefoxOptions()
     # options.set_preference('network.proxy.type', 1)
@@ -46,52 +50,40 @@ def scrape_multiple_pages(keyword, start_page, end_page):
     # 格式化时间字符串
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
     # 构建文件名
-    file_name = f"data/tm/天猫_{urllib.parse.unquote(keyword)}_{time_string}.xlsx"
+    file_name = f"data/snyg/苏宁易购_{urllib.parse.unquote(keyword)}_{time_string}.xlsx"
     total_num = 0
     record_num = 0
 
     workbook = Workbook()
     sheet = workbook.active
     headers = ['序号', '电商平台', '关键词/产品', '店铺名称(全称)', '店铺网址', '店铺经营主体信息', '商品图片', '商品标题', '实际品牌', '商品链接', '价格(单位：元)', '销售量(单位：件)', '商品评价(单位：个)', '销售额(单位：元)']
-
+    
     sheet.append(headers)
+    
     workbook.save(file_name)
-    url = input("请输入网址：")
-    driver.get(url)
-    time.sleep(2)
 
-    li_elements = driver.find_elements(by="xpath", value="//li[contains(@class, 'SortBar--customTabItem--YnxmQgr')]")
-    li_elements[1].click()
-    time.sleep(3)
-
+    searchUrl = "https://search.suning.com/"+keyword+"/st=6"
+    driver.get(searchUrl)
     html = driver.execute_script(
         "return document.documentElement.outerHTML")
     # 创建 Beautiful Soup 对象
     soup = BeautifulSoup(html, "html.parser")
-    try:
-        elements = soup.select('button.next-btn.next-medium.next-btn-normal.next-pagination-item')
 
-        max_page = int(re.search(r"共(\d+)页",elements[1].get('aria-label')).group(1))
+    # 使用 select 方法查找指定的元素
+    try:
+        elements = soup.select('a[aria-label]')
+        max_page = 1
+        if is_float(elements[len(elements)-1].text):
+            max_page = int(elements[len(elements)-1].text)   
         print("最大页数：",max_page,end_page)
         if(end_page>max_page):
             end_page = max_page
     except:
-        print('获取最大页数时出错')
+        driver.quit()
+        print('与现有浏览器连接断开')
 
     for page in range(start_page, end_page+1):
         try:
-            tempHtml = driver.execute_script(
-                "return document.documentElement.outerHTML")
-            # 创建 Beautiful Soup 对象
-            tempSoup = BeautifulSoup(tempHtml, "html.parser")
-            try:
-                tempElements = tempSoup.select('button.next-btn.next-medium.next-btn-normal.next-pagination-item')
-                max_page = int(re.search(r"共(\d+)页",tempElements[1].get('aria-label')).group(1))
-                print('最大页面数：',max_page)
-                if(page>max_page):
-                    break
-            except:
-                print('更新最大页数时出错')
             [single_total_num, single_record_num] = scrape_single_page(driver, keyword, start_page, page, file_name, headers)
             total_num += single_total_num
             record_num += single_record_num
@@ -108,7 +100,7 @@ def scrape_multiple_pages(keyword, start_page, end_page):
     driver.quit()
     print('与现有浏览器连接断开')
     # 重命名文件
-    new_file_name = f"data/tm/天猫_{urllib.parse.unquote(keyword)}_{time_string}_({record_num} of {total_num}).xlsx"
+    new_file_name = f"data/snyg/苏宁易购_{urllib.parse.unquote(keyword)}_{time_string}_({record_num} of {total_num}).xlsx"
     try:
         os.rename(file_name, new_file_name)
         print(f"已将文件 {file_name} 重命名为 {new_file_name}")
@@ -130,7 +122,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
     print("正在记录第"+str(page)+"页")
     try:
         if(page!=start_page):
-            button = driver.find_element("xpath", "//button[contains(@class, 'next-btn') and contains(@class, 'next-medium') and contains(@class, 'next-btn-normal') and contains(@class, 'next-pagination-item') and contains(@class, 'next-next')]")
+            button = driver.find_element("xpath", "//a[@id='nextPage']")
             button.click()
             time.sleep(2)
     except:
@@ -148,29 +140,36 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
     except:
         print('下拉获取页面信息时发生错误')
 
+
     html = driver.execute_script(
         "return document.documentElement.outerHTML")
     # 创建 Beautiful Soup 对象
     soup = BeautifulSoup(html, "html.parser")
+
     # 使用 select 方法查找指定的元素
-    elements = soup.select('div.Content--contentInner--QVTcU0M div a.Card--doubleCardWrapperMall--uPmo5Bz')
+    elements = soup.select('li.item-wrap')
     print(len(elements))
     try:
         for (index, element) in enumerate(elements, start=1):
-            goods_titles = element.select('div.Title--title--jCOPvpf')
-            goods_nums = element.select('span.Price--realSales--FhTZc7U')
-            goods_prices1 = element.select('span.Price--priceInt--ZlsSi_M')
-            goods_prices2 = element.select('span.Price--priceFloat--h2RR0RK')
+            shop_elements = element.select('a.store-name') or element.select('a.store-class.zy')
+            goods_elements = element.select('div.img-block a')
+            goods_titles = element.select('div.title-selling-point a')
+            goods_prices = element.select('div.price-box span')
+            goods_commits = element.select('div.info-evaluate a i')
+
             total_num += 1
-            # # 筛选
+            # 筛选
+            # if (len(shop_elements) != 0):
+            #     if filter_by_shop_name(shop_elements[0].text):
+            #         continue
+            
             # if (len(goods_titles) != 0):
             #     if filter_by_goods_name(goods_titles[0].text):
             #         continue
-            if element.get('href').startswith('https:'):
-                continue
-            if convert_string_to_number(goods_nums[0].text.replace('人付款','').replace('人收货','')) < 10:
-                continue
 
+            # if(len(goods_commits) != 0):
+            #     if convert_string_to_number(goods_commits[0].text) < 200:
+            #         continue
             record_num += 1
 
             # 下一行
@@ -193,7 +192,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 电商平台
             try:
                 last_column+=1
-                platform_name = '天猫'
+                platform_name = '苏宁易购'
                 # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                 # sheet.row_dimensions[last_row].height = row_height
                 # current_time_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
@@ -219,13 +218,8 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 店铺名称
             try:
                 last_column+=1
-                item = element.select('a.ShopInfo--shopName--rg6mGmy')
-                if (len(item) != 0):
-                    shop_name = ''
-                    if has_unrecognized_characters(item[0].text):
-                        shop_name = remove_unrecognized_characters(item[0].text)
-                    else:
-                        shop_name = item[0].text
+                if (len(shop_elements) != 0):
+                    shop_name = shop_elements[0].text
                     # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                     # sheet.row_dimensions[last_row].height = row_height
                     # shop_name_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
@@ -240,11 +234,10 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 店铺网址
             try:
                 last_column+=1
-                item = element.select('a.ShopInfo--shopName--rg6mGmy')
-                if (len(item) != 0):
-                    shop_link = item[0].get('href')
-                    if not shop_link.startswith('https:'):
-                        shop_link = 'https:' + shop_link
+                if (len(shop_elements) != 0):
+                    shop_link = 'https:' + shop_elements[0].get('href')
+                    if shop_elements[0].get('href') == 'javascript:void(0);':
+                        shop_link = ''
                     # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                     # sheet.row_dimensions[last_row].height = row_height
                     # shop_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
@@ -272,16 +265,21 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 商品图片
             try:
                 last_column+=1
-                item = element.select('img.MainPic--mainPic--rcLNaCv')
-                if(len(item) != 0):
-                    goods_img_url = item[0].get('src')
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_img_url_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_img_url_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    # goods_img_url_cell.font = Font(underline="single", color="0563C1")
-                    # goods_img_url_cell.hyperlink = goods_img_url
-                    sheet.cell(row=last_row, column=last_column, value=goods_img_url)
+                if(len(goods_elements) != 0):
+                    goods_img_urls = goods_elements[0].select('img')
+                    if (len(goods_img_urls) != 0):
+                        goods_img_url = goods_img_urls[0].get('src')
+                        if goods_img_url:
+                            goods_img_url = 'https:' + goods_img_url
+                            if goods_img_url.endswith('.avif'):
+                                goods_img_url = goods_img_url[:-5]
+                        # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                        # sheet.row_dimensions[last_row].height = row_height
+                        # goods_img_url_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                        # goods_img_url_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                        # goods_img_url_cell.font = Font(underline="single", color="0563C1")
+                        # goods_img_url_cell.hyperlink = goods_img_url
+                        sheet.cell(row=last_row, column=last_column, value=goods_img_url)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -290,7 +288,8 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             try:
                 last_column+=1
                 if (len(goods_titles) != 0):
-                    goods_title = goods_titles[0].text.strip()
+                    goods_title = goods_titles[0].text
+                    goods_title = goods_title.strip()
                     # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                     # sheet.row_dimensions[last_row].height = row_height
                     # shop_title_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
@@ -307,8 +306,8 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 last_column+=1
                 # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                 # sheet.row_dimensions[last_row].height = row_height
-                # goods_brand_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # goods_brand_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -316,16 +315,35 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 商品链接
             try:
                 last_column+=1
-                goods_link = element.get('href')
-                if not goods_link.startswith('https:'):
-                    goods_link = 'https:' + goods_link
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # goods_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # goods_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                # goods_link_cell.font = Font(underline="single", color="0563C1")
-                # goods_link_cell.hyperlink = goods_link
-                sheet.cell(row=last_row, column=last_column, value=goods_link)
+                if (len(goods_elements) != 0):
+                    goods_link = 'https://product.suning.com/'
+                    temp = goods_elements[0].get('sa-data')
+                    temp = temp.replace("'", '"')
+                    # 查找 shopid 的位置
+                    shopid_index = temp.find('"shopid"')
+                    if shopid_index != -1:
+                        # 使用切片提取 shopid 的值
+                        shopid_start = shopid_index + len('"shopid":"')
+                        shopid_end = temp.find('"', shopid_start)
+                        shopid = temp[shopid_start:shopid_end]
+                        goods_link = goods_link + shopid +  '/'
+                    # 查找 prdid 的位置
+                    prdid_index = temp.find('"prdid"')
+                    if prdid_index != -1:
+                        # 使用切片提取 prdid 的值
+                        prdid_start = prdid_index + len('"prdid":"')
+                        prdid_end = temp.find('"', prdid_start)
+                        prdid = temp[prdid_start:prdid_end]
+                        goods_link = goods_link + prdid +  '.html'
+                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                    # sheet.row_dimensions[last_row].height = row_height
+                    # goods_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                    # goods_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                    # goods_link_cell.font = Font(underline="single", color="0563C1")
+                    # goods_link_cell.hyperlink = goods_link
+                    sheet.cell(row=last_row, column=last_column, value=goods_link)
+                else:
+                    sheet.cell(row=last_row, column=last_column, value='')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -333,9 +351,9 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 单价
             try:
                 last_column+=1
-                if (len(goods_prices1) != 0 and len(goods_prices2) != 0):
-                    goods_price = goods_prices1[0].text + goods_prices2[0].text
-                    goods_price = goods_price.strip()
+                if (len(goods_prices) != 0):
+                    goods_price = goods_prices[0].text
+                    goods_price = goods_price.strip().replace('¥', '').replace('到手价', '')
                     # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                     # sheet.row_dimensions[last_row].height = row_height
                     # goods_price_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
@@ -350,24 +368,26 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 销售量
             try:
                 last_column+=1
-                if (len(goods_nums) != 0):
-                    goods_num = goods_nums[0].text.replace('人付款','').replace('人收货','')
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_num_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_num_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    sheet.cell(row=last_row, column=last_column, value=goods_num)
+                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                # sheet.row_dimensions[last_row].height = row_height
+                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
-            
+
             # 商品评论数
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # goods_commit_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # goods_commit_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                if (len(goods_commits) != 0):
+                    goods_commit = goods_commits[0].text and goods_commits[0].text or '0'
+                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                    # sheet.row_dimensions[last_row].height = row_height
+                    # goods_commit_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                    # goods_commit_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                    sheet.cell(row=last_row, column=last_column, value=goods_commit)
+                else:
+                    sheet.cell(row=last_row, column=last_column, value='0')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -375,10 +395,12 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 销售额
             try:
                 last_column+=1
-                if(len(goods_prices1) != 0 and len(goods_prices2) != 0 and len(goods_nums) != 0):
-                    goods_price = is_float(goods_prices1[0].text + goods_prices2[0].text) and float(goods_prices1[0].text + goods_prices2[0].text) or 0
-                    goods_num = convert_string_to_number(goods_nums[0].text.replace('人付款','').replace('人收货',''))
-                    goods_sales = goods_price * goods_num
+                if (len(goods_prices) != 0 and len(goods_commits) != 0):
+                    goods_price = goods_prices[0].text
+                    goods_price = goods_price.strip().replace('¥', '').replace('到手价', '')
+                    goods_price = is_float(goods_price) and float(goods_price) or 0
+                    goods_commit = convert_string_to_number(goods_commits[0].text)
+                    goods_sales = goods_price * goods_commit
                     # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
                     # sheet.row_dimensions[last_row].height = row_height
                     # goods_sales_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
@@ -390,7 +412,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
     except Exception as e:
-        print('表格记录数据时出错')
+        print(e)
         driver.quit()
         print('与现有浏览器连接断开')
 
@@ -404,7 +426,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
     return [total_num, record_num]
 
 def filter_by_shop_name(shopName):
-    keywords = ['华为京东自营官方旗舰店']
+    keywords = ['华为苏宁易购自营官方旗舰店']
     if shopName in keywords:
         return True
     else:
@@ -423,15 +445,28 @@ def filter_by_goods_name(goodsName):
                 return True
     return False
 
+def filter_by_goods_commit(goodsCommit):
+    if not goodsCommit:
+        return True
+    if goodsCommit.endswith('万+'):
+        return False
+    elif goodsCommit.endswith('+'):
+        if int(goodsCommit[:-1])>=200:
+            return False
+        else:
+            return True
+    else:
+        return True
+
 def convert_string_to_number(string):
     if not string:
         return 0
     if string.endswith('万+'):
-        number = int(string[:-2]) * 10000
+        number = float(string[:-2]) * 10000
     elif string.endswith('+'):
-        number = int(string[:-1])
+        number = float(string[:-1])
     else:
-        number = int(string)
+        number = float(string)
     return number
 
 def is_float(string):
@@ -441,14 +476,8 @@ def is_float(string):
     except ValueError:
         return False
 
-def has_unrecognized_characters(string):
-    return not all(char.isprintable() for char in string)
-
-def remove_unrecognized_characters(string):
-    return ''.join(char for char in string if char.isprintable())
-
 if __name__ == "__main__":
-    keyword = urllib.parse.quote("华为通用")
+    keyword = urllib.parse.quote("华为开放式耳机")
     start_page = 1
     end_page = 100
     [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)

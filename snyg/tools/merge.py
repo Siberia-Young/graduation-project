@@ -11,8 +11,8 @@ row_height = 40
 column_width = 14
 
 num = 2
-new_file_name = 'data/jd/merge/merge.xlsx'
-folder_path = 'data/jd/merge'
+new_file_name = 'data/pdd/merge/merge.xlsx'
+folder_path = 'data/pdd/merge'
 
 # 新建excel表
 new_workbook = Workbook()
@@ -28,7 +28,7 @@ end_file = int(input('请输入文件个数：'))
 # 记录到新表
 try:
     for index in range(1,end_file+1):
-        file_name = os.path.join(folder_path,f'jd ({index}).xlsx')
+        file_name = os.path.join(folder_path,f'pdd ({index}).xlsx')
         # 打开需读取的excel表
         workbook = load_workbook(file_name)
         sheet = workbook.active

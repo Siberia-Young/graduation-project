@@ -2,9 +2,10 @@ from openpyxl import load_workbook
 from openpyxl import Workbook
 import time
 import os
+from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/pdd/merge/309.xlsx"
-num = 2
+file_name = "data/snyg/merge/12.xlsx"
+num = 8
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
 # 打开需读取的excel表
@@ -21,9 +22,9 @@ first_row = sheet[1]
 for cell in first_row:
     new_sheet[cell.coordinate].value = cell.value
 
-# 通过商品链接进行筛选去重并记录到新excel表
+# 分类并排序
 try:
-    list = []
+    dict = {}
     start_row = 2
     end_row = sheet.max_row
 
@@ -31,41 +32,46 @@ try:
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在比对去重并记录到新的excel表')
+    print(f'\n正在分类并排序')
+    # 分类
     for row in range(start_row, end_row + 1):
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        value = sheet.cell(row=row, column=10).value
-        if value not in list:
-            list.append(value)
-            for cell in sheet[row]:
-                new_sheet[cell.coordinate].value = cell.value
+        value = sheet.cell(row=row, column=5).value
+        if value in dict:
+            dict[value].append(row)
+        else:
+            dict[value] = [row]
+    # 排序
+    def sort_condition(item):
+        return int(sheet.cell(row=item, column=14).value)
+    for key, val in dict.items():
+        val.sort(key=sort_condition, reverse=True)
 except Exception as e:
     print(e)
-    print('通过商品链接进行筛选去重并记录到新excel表时出错')
+    print('分类并排序时出错')
 
-# 删除新excel表空白行
+# 记录到新表
 try:
-    list = []
-    print(f'\n正在删除空白行')
-    for row in range(start_row, end_row + 1):
-        value = new_sheet.cell(row=row, column=1).value
-        if(value==None):
-            list.append(row)
+    start_row = 2
+    end_row = sheet.max_row
 
-    total = len(list)
+    total = end_row - start_row + 1
     current = 0
     start_time = time.time()
     time.sleep(1)
-    for row in reversed(list):
-        current+=1
-        res = (total - current) / (current / ((time.time() - start_time) / 60))
-        print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        new_sheet.delete_rows(row)
+    print(f'\n正在记录数据到新表')
+    for key, val in dict.items():
+        for row in val:
+            current+=1
+            res = (total - current) / (current / ((time.time() - start_time) / 60))
+            print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
+            for cell in sheet[row]:
+                new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
-    print('删除新excel表空白行时出错')
+    print('记录到新表时出错')
 
 # 处理序号
 try:
@@ -89,11 +95,11 @@ except Exception as e:
 new_workbook.save(new_file_name)
 
 # 修改文件名
-# try:
-#     temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
-#     os.rename(file_name, temp_file_name)
-#     os.rename(new_file_name, file_name)
-#     os.rename(temp_file_name, new_file_name)
-# except Exception as e:
-#     print(e)
-#     print('修改文件名时出错')
+try:
+    temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
+    os.rename(file_name, temp_file_name)
+    os.rename(new_file_name, file_name)
+    os.rename(temp_file_name, new_file_name)
+except Exception as e:
+    print(e)
+    print('修改文件名时出错')

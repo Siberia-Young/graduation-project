@@ -8,7 +8,7 @@ from openpyxl.utils import get_column_letter
 import time
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 
-filename = "data/jd/merge/965.xlsx"
+filename = "data/snyg/merge/12.xlsx"
 workbook = load_workbook(filename)
 sheet = workbook.active
 start_time = time.time()
@@ -20,12 +20,12 @@ total = end_row - start_row + 1
 current = 0
 
 # 创建代理对象
-proxy = Proxy()
-proxy.proxy_type = ProxyType.MANUAL
-proxy.http_proxy = '183.7.15.172:45151'
+# proxy = Proxy()
+# proxy.proxy_type = ProxyType.MANUAL
+# proxy.http_proxy = '183.7.15.172:45151'
 # 打开火狐浏览器模拟器
 options = webdriver.FirefoxOptions()
-options.add_argument('--proxy-server={}'.format(proxy.http_proxy))
+# options.add_argument('--proxy-server={}'.format(proxy.http_proxy))
 driver = webdriver.Remote(command_executor="http://127.0.0.1:4444", options=options)
 
 # options = webdriver.FirefoxOptions()
@@ -37,39 +37,25 @@ try:
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
 
-        temp = sheet.cell(row=row, column=9).value
-        if temp != None and temp != '暂无':
-            continue
+        shop_name = sheet.cell(row=row, column=4).value
         goods_link = sheet.cell(row=row, column=10).value
         driver.get(goods_link)
         time.sleep(0.3)
         tempHTML = driver.execute_script("return document.documentElement.outerHTML")
         tempSoup = BeautifulSoup(tempHTML, "html.parser")
 
-        elements = tempSoup.select('div.hxm_hide_page')
-        if len(elements) == 0:
-            elements = tempSoup.select('div.itemover-tip')
-        if len(elements) == 0:
+        elements = tempSoup.select('ul.cnt li span a')
+        if len(elements) != 0:
             try:
-                goods_brand_element = tempSoup.find_all('ul',id='parameter-brand')
-                goods_brand = len(goods_brand_element) == 0 and '暂无' or goods_brand_element[0].select('li a')[0].text
+                goods_brand = elements[0].text
                 sheet.cell(row=row, column=9, value=goods_brand)
-                # item = tempSoup.select('div.p-parameter')
-                # sheet.cell(row=row, column=16, value=item[0].text)
-                if sheet.cell(row=row, column=4).value is None:
-                    shop_element = tempSoup.select('div.popbox-inner h3 a')
-                    
-                    shop_name = len(shop_element) == 0 and '暂无' or shop_element[0].text
-                    shop_name_cell = sheet[f"{get_column_letter(4)}{row}"]
-                    shop_name_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    sheet.cell(row=row, column=4, value=shop_name)
-
-                    shop_link = len(shop_element) == 0 and '暂无' or ('https:'+shop_element[0].get('href'))
-                    shop_link_cell = sheet[f"{get_column_letter(5)}{row}"]
-                    shop_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    shop_link_cell.font = Font(underline="single", color="0563C1")
-                    shop_link_cell.hyperlink = shop_link
-                    sheet.cell(row=row, column=5, value=shop_link)
+                if shop_name == '苏宁自营':
+                    shop_name_element = tempSoup.find_all('a',id='chead_indexUrl')
+                    if len(shop_name_element) != 0:
+                        shop_name = shop_name_element[0].select('strong')[0].text
+                        shop_link = 'https:' + shop_name_element[0].get('href')
+                        sheet.cell(row=row, column=4, value=shop_name)
+                        sheet.cell(row=row, column=5, value=shop_link)
             except:
                 workbook.save(filename)
                 driver.quit()
