@@ -4,7 +4,7 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/jd/merge/merge.xlsx"
+file_name = "data/jd/merge/1345.xlsx"
 num = 8
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
@@ -38,7 +38,7 @@ try:
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        value = sheet.cell(row=row, column=5).value
+        value = sheet.cell(row=row, column=6).value
         if value in dict:
             dict[value].append(row)
         else:

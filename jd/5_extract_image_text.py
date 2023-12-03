@@ -5,7 +5,7 @@ from openpyxl.utils import get_column_letter
 import time
 import os
 
-file_name = "data/jd/京东_华为移动快充_2023-11-20_11-17-29_(5925 of 5970).xlsx"
+file_name = "data/jd/merge/986.xlsx"
 num = 5
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
 

@@ -5,7 +5,7 @@ import os
 from openpyxl.utils.cell import get_column_letter
 import datetime
 
-file_name = "data/jd/需求2_京东.xlsx"
+file_name = "data/jd/merge/1369.xlsx"
 num = 1
 base_file_name = 'src/jd/data_files/shop_data.xlsx'
 current_time = datetime.datetime.now()

@@ -4,13 +4,10 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 import re
-import json
 
-file_name = "data/pdd/merge/309.xlsx"
+file_name = "data/pdd/merge/841.xlsx"
 num = 3
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
-
-json_path = "src/jd/data_files/filter.json"
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -43,7 +40,7 @@ try:
             number = float(string)
         return number
     def check_keywords1(text):
-        keywords = ['耳机']
+        keywords = ['手表','watch','gt']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -53,9 +50,6 @@ try:
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
     list = ['华为官方旗舰店','荣耀官方旗舰店','天天特卖工厂店','天猫超市','绿联数码旗舰店']
-    # 读取现有店铺信息
-    with open(json_path, encoding='utf-8') as file:
-        other_list = json.load(file)
     record_list = []
     start_row = 2
     end_row = sheet.max_row
@@ -69,7 +63,7 @@ try:
         shop_name = sheet.cell(row=row, column=4).value
         goods_title = sheet.cell(row=row, column=8).value
         goods_nums = sheet.cell(row=row, column=12).value
-        if convert_string_to_number(goods_nums) >= 200 and shop_name not in other_list and check_keywords1(goods_title) and check_keywords2(goods_title):
+        if convert_string_to_number(goods_nums) >= 200 and check_keywords1(goods_title) and check_keywords2(goods_title):
             record_list.append(row)
 except Exception as e:
     print(e)

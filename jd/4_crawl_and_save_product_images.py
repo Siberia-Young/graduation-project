@@ -3,7 +3,7 @@ import time
 import requests
 import os
 
-file_name = "data/pdd/拼多多_华为手表_2023-11-06_18-32-40.xlsx"
+file_name = "data/jd/merge/986.xlsx"
 num = 4
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
 
