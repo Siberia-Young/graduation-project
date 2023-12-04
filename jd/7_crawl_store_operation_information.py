@@ -20,7 +20,7 @@ APPId = "b9b55ac3"  # 控制台获取
 APISecret = "NzA4N2QxMDNlZjQzMzk5YjUzYzM5NzM3"  # 控制台获取
 APIKey = "602f362334c3f47d5c626652e91f25dc"  # 控制台获取
 
-file_name = 'data/jd/merge/1345.xlsx'
+file_name = 'data/jd/merge/6907.xlsx'
 row_height = 40
 column_width = 14
 
@@ -168,7 +168,7 @@ try:
                     with open(temp_image_path, "rb") as f:
                         imageBytes = f.read()
 
-                    url = 'https://api.xf-yun.com/v1/private/sf8e6aca1'
+                    temp_url = 'https://api.xf-yun.com/v1/private/sf8e6aca1'
 
                     body = {
                         "header": {
@@ -194,7 +194,7 @@ try:
                         }
                     }
 
-                    request_url = assemble_ws_auth_url(url, "POST", APIKey, APISecret)
+                    request_url = assemble_ws_auth_url(temp_url, "POST", APIKey, APISecret)
                     headers = {'content-type': "application/json", 'host': 'api.xf-yun.com', 'app_id': APPId}
                     response = requests.post(request_url, data=json.dumps(body), headers=headers)
                     tempResult = json.loads(response.content.decode())
@@ -206,7 +206,7 @@ try:
                         for item in temp_list:
                             code_list.append(item['words'][0]['content'])
                         # code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
-                        code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
+                        code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('ұ', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
                     except:
                         print('遇到验证码')
                         driver.get(url)

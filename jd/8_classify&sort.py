@@ -4,7 +4,7 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/jd/merge/1345.xlsx"
+file_name = "data/jd/merge/6907.xlsx"
 num = 8
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
@@ -95,11 +95,11 @@ except Exception as e:
 new_workbook.save(new_file_name)
 
 # 修改文件名
-try:
-    temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
-    os.rename(file_name, temp_file_name)
-    os.rename(new_file_name, file_name)
-    os.rename(temp_file_name, new_file_name)
-except Exception as e:
-    print(e)
-    print('修改文件名时出错')
+# try:
+#     temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
+#     os.rename(file_name, temp_file_name)
+#     os.rename(new_file_name, file_name)
+#     os.rename(temp_file_name, new_file_name)
+# except Exception as e:
+#     print(e)
+#     print('修改文件名时出错')

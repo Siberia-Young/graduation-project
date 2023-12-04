@@ -17,7 +17,7 @@ import io
 from PIL import Image
 
 
-file_name = 'data/jd/merge/1345.xlsx'
+file_name = 'data/jd/merge/6907.xlsx'
 num = 2
 base_file_name = 'src/jd/data_files/shop_data.xlsx'
 row_height = 40

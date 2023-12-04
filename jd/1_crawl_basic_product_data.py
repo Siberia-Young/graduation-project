@@ -21,17 +21,21 @@ max_delay = 5  # 最大延迟时间（单位：秒）
 row_height = 40
 column_width = 14
 
+# login函数用于给手动登录操作预留时间
 def login(driver):
     print('登录')
     driver.get('https://passport.jd.com/new/login.aspx')
     time.sleep(30)
 
+# scrape_multiple_pages函数用于爬取按照关键词产生的商品从start_page到end_page的分页数据
 def scrape_multiple_pages(keyword, start_page, end_page):
+    # 打开一个连接固定端口的浏览器模拟器用于保持状态
     options = webdriver.FirefoxOptions()
     driver = webdriver.Remote(
         command_executor="http://127.0.0.1:4444", options=options)
     # options = webdriver.FirefoxOptions()
     # driver = webdriver.Firefox(options=options)
+
     # 创建带有Selenium Wire的Firefox WebDriver对象
     # options = webdriver.FirefoxOptions()
     # options.set_preference('network.proxy.type', 1)
@@ -42,36 +46,30 @@ def scrape_multiple_pages(keyword, start_page, end_page):
     # login(driver)
     print("登录成功")
 
-    # 获取当前时间
+    # 获取当前时间并格式化时间字符串，将其作为文件名一部分
     current_time = datetime.datetime.now()
-    # 格式化时间字符串
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
-    # 构建文件名
+    # 构建文件名，格式为：平台名称+关键词+时间
     file_name = f"data/jd/京东_{urllib.parse.unquote(keyword)}_{time_string}.xlsx"
+    # 初始化total_num和record_num用于记录整个过程爬取的商品条数和真正记录到excel表的商品条数
     total_num = 0
     record_num = 0
 
+    # 创建一个新的excel用于记录数据操作并设置好表头为headers的内容，并将得到的新表初步保存一下
     workbook = Workbook()
     sheet = workbook.active
     headers = ['序号', '电商平台', '关键词/产品', '店铺名称(全称)', '店铺网址', '店铺经营主体信息', '商品图片', '商品标题', '实际品牌', '商品链接', '价格(单位：元)', '销售量(单位：件)', '商品评价(单位：个)', '销售额(单位：元)']
-    
     sheet.append(headers)
-    for index, cell in enumerate(sheet[1], start=1):
-        if index == 16:
-            cell.fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
-            cell.font = Font(bold=True, color="FFFFFF")
-        else:
-            cell.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
-            cell.font = Font(bold=True, color="000000")
-        cell.alignment = Alignment(horizontal='center', vertical='center')
     workbook.save(file_name)
 
+    # 通过构造url来访问关键词的搜索结果，等待部分时间加载页面，用bs4来解析页面
     driver.get("https://search.jd.com/Search?keyword="+keyword+"&psort=4&page=1&s=1")
     time.sleep(2)
     html = driver.execute_script(
         "return document.documentElement.outerHTML")
-    # 创建 Beautiful Soup 对象
     soup = BeautifulSoup(html, "html.parser")
+
+    # 通过bs4来获取该关键词的搜索得到的商品最大页数，纠正end_page
     try:
         elements = soup.select('span.p-skip em b')
         max_page = 1
@@ -83,15 +81,17 @@ def scrape_multiple_pages(keyword, start_page, end_page):
     except:
         print('获取最大页数时出错')
 
+    # 从start_page到end_page爬取商品数据，该过程可以使用ctrl+C来主动终止爬虫程序
     for page in range(start_page, end_page+1):
         try:
+            # 不断更新total_num和record_num用于最后能爬取的商品数和实际记录的商品数的统计
             [single_total_num, single_record_num] = scrape_single_page(driver, keyword, page, file_name, headers)
             total_num += single_total_num
             record_num += single_record_num
         except Exception as e:
             print(e)
             driver.quit()
-            print('与现有浏览器连接断开')
+            print('发生错误，与现有浏览器连接断开')
             break
         except KeyboardInterrupt:
             driver.quit()
@@ -110,30 +110,35 @@ def scrape_multiple_pages(keyword, start_page, end_page):
         print(f"重命名文件 {file_name} 失败")
     return [total_num, record_num]
 
+# scrape_single_page函数用于爬取单页的商品信息，并将数据经过部分条件筛选后记录到excel表
 def scrape_single_page(driver, keyword, page, file_name, headers):
+    # 加载之前创建的excel表
     workbook = load_workbook(file_name)
     sheet = workbook.active
     last_row = sheet.max_row
+    # 初始化total_num和record_num用于记录整个过程爬取的商品条数和真正记录到excel表的商品条数
     total_num = 0
     record_num = 0
 
+    # 设置适当的时间间隔以避免触发反爬虫
     delay = random.uniform(min_delay, max_delay)
     time.sleep(delay)
 
     print("正在记录第"+str(page)+"页")
+
+    # 通过构造url来访问关键词下搜索得到的每页商品数据
     searchUrl = "https://search.jd.com/Search?keyword=" + \
         keyword+"&psort=4&page="+str(page)+"&s=1"
     driver.get(searchUrl)
 
     html = driver.execute_script(
         "return document.documentElement.outerHTML")
-    # 创建 Beautiful Soup 对象
     soup = BeautifulSoup(html, "html.parser")
 
-    # 使用 select 方法查找指定的元素
+    # 通过bs4得到整个页面解析得来的单个商品元素构成的列表
     elements = soup.select('li.gl-item')
     try:
-        # 将元素转换为字符串，并逐行保存到 Excel 文件
+        # 逐个解析提取列表中商品信息的各部分数据
         for (index, element) in enumerate(elements, start=1):
             shop_elements = element.select('div.p-shop a.curr-shop.hd-shopname')
             goods_elements = element.select('div.p-img a')
@@ -149,10 +154,7 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             if len(shop_elements) == 0:
                 continue
             
-            # if (len(goods_titles) != 0):
-            #     if filter_by_goods_name(goods_titles[0].text):
-            #         continue
-
+            # 筛选掉评论数不足200的商品
             if(len(goods_commits) != 0):
                 if convert_string_to_number(goods_commits[0].text and goods_commits[0].text or '0') < 200:
                     continue
@@ -249,35 +251,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             # 商品图片
             try:
                 last_column+=1
-                # if (len(goods_elements) != 0):
-                #     goods_img_urls = goods_elements[0].select('img')
-                #     if (len(goods_img_urls) != 0):
-                #         goods_img_url = goods_img_urls[0].get('src')
-                #         if goods_img_url:
-                #             goods_img_url = goods_img_url
-                #         else:
-                #             goods_img_url = goods_elements[0].select(
-                #                 'img')[0].get('data-lazy-img')
-                            
-                #         try:
-                #             # 发送HTTP请求获取图片数据
-                #             response = requests.get('https:'+goods_img_url)
-                #             image_data = response.content
-                #             # 创建Image对象
-                #             goods_img = Image(BytesIO(image_data))
-
-                #             goods_img_cell = sheet.cell(row=last_row, column=last_column)
-                #             sheet[f"{get_column_letter(last_column)}{last_row}"].alignment = Alignment(vertical='center')
-                #             sheet.add_image(goods_img, goods_img_cell.coordinate)
-                #             sheet.column_dimensions[goods_img_cell.column_letter].width = goods_img.width / 7.2
-                #             sheet.row_dimensions[goods_img_cell.row].height = goods_img.height / 1.32
-                #         except Exception as e:
-                #             print('注意断开vpn连接，与现有浏览器连接断开')
-                #             driver.quit()
-                #     else:
-                #         sheet.cell(row=last_row, column=last_column, value='')
-                # else:
-                #     sheet.cell(row=last_row, column=last_column, value='')
                 if(len(goods_elements) != 0):
                     goods_img_urls = goods_elements[0].select('img')
                     if (len(goods_img_urls) != 0):
@@ -341,16 +314,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                     # goods_link_cell.font = Font(underline="single", color="0563C1")
                     # goods_link_cell.hyperlink = goods_link
                     sheet.cell(row=last_row, column=last_column, value=goods_link)
-
-                    # driver.get(goods_link)
-                    # tempHTML = driver.execute_script("return document.documentElement.outerHTML")
-                    # tempSoup = BeautifulSoup(tempHTML, "html.parser")
-                    # try:
-                    #     goods_brand = tempSoup.select('ul.p-parameter-list')[0].select('li')[0].get('title')
-                    #     sheet.cell(row=last_row, column=last_column-1, value=goods_brand)
-                    # except:
-                    #     print('获取商品品牌出错')
-                    # time.sleep(0.2)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
             except:
@@ -432,6 +395,7 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
         print('与现有浏览器连接断开')
     return [total_num, record_num]
 
+# 店铺名称筛选
 def filter_by_shop_name(shopName):
     keywords = ['华为京东自营官方旗舰店']
     if shopName in keywords:
@@ -439,6 +403,7 @@ def filter_by_shop_name(shopName):
     else:
         return False
 
+# 商品标题筛选
 def filter_by_goods_name(goodsName):
     required_keywords = 3  # 至少需要满足的关键字数
     lower_case_good_name = goodsName.lower()
@@ -452,6 +417,7 @@ def filter_by_goods_name(goodsName):
                 return True
     return False
 
+# 商品评论数筛选
 def filter_by_goods_commit(goodsCommit):
     if not goodsCommit:
         return True
@@ -465,6 +431,7 @@ def filter_by_goods_commit(goodsCommit):
     else:
         return True
 
+# 字符串转数字
 def convert_string_to_number(string):
     if not string:
         return 0
@@ -476,6 +443,7 @@ def convert_string_to_number(string):
         number = int(string)
     return number
 
+# 
 def is_float(string):
     try:
         float(string)
@@ -484,7 +452,11 @@ def is_float(string):
         return False
 
 if __name__ == "__main__":
-    keyword = urllib.parse.quote("华为开放式耳机")
+    # keyword为搜索的关键词，依照该关键词到电商平台获取相关商品信息
+    # start_page为电商平台分页展示搜索结果，爬取的开始页数
+    # end_page为电商平台分页展示搜索结果，爬取的结束页数
+    # total_num和record_num分别为整个过程爬取的商品条数和真正记录到excel表的商品条数
+    keyword = urllib.parse.quote("华为游戏耳机")
     start_page = 1
     end_page = 200
     [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)
