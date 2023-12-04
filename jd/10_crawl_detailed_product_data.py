@@ -8,7 +8,7 @@ from openpyxl.utils import get_column_letter
 import time
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 
-filename = "data/jd/merge/965.xlsx"
+filename = "data/jd/merge/5516.xlsx"
 workbook = load_workbook(filename)
 sheet = workbook.active
 start_time = time.time()
@@ -22,7 +22,7 @@ current = 0
 # 创建代理对象
 proxy = Proxy()
 proxy.proxy_type = ProxyType.MANUAL
-proxy.http_proxy = '183.7.15.172:45151'
+proxy.http_proxy = '183.7.128.113:45151'
 # 打开火狐浏览器模拟器
 options = webdriver.FirefoxOptions()
 options.add_argument('--proxy-server={}'.format(proxy.http_proxy))

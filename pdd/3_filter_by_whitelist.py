@@ -10,7 +10,7 @@ file_name = "data/pdd/merge/309.xlsx"
 num = 3
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
-json_path = "src/jd/data_files/filter.json"
+json_path = "src/pdd/data_files/filter.json"
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)

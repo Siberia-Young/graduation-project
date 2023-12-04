@@ -3,7 +3,7 @@ from openpyxl import Workbook
 import time
 import os
 
-file_name = "data/jd/merge/1953.xlsx"
+file_name = "data/jd/merge/22414.xlsx"
 num = 2
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
@@ -89,11 +89,11 @@ except Exception as e:
 new_workbook.save(new_file_name)
 
 # 修改文件名
-try:
-    temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
-    os.rename(file_name, temp_file_name)
-    os.rename(new_file_name, file_name)
-    os.rename(temp_file_name, new_file_name)
-except Exception as e:
-    print(e)
-    print('修改文件名时出错')
+# try:
+#     temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
+#     os.rename(file_name, temp_file_name)
+#     os.rename(new_file_name, file_name)
+#     os.rename(temp_file_name, new_file_name)
+# except Exception as e:
+#     print(e)
+#     print('修改文件名时出错')

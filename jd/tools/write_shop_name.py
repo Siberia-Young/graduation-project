@@ -5,7 +5,7 @@ import os
 from openpyxl.utils.cell import get_column_letter
 import json
 
-file_name = "data/jd/2023-11-29/jd_2023-11-29/文件4_(2096).xlsx"
+file_name = "data/jd/2023-12-01/jd_2023-12-01/文件4_(965).xlsx"
 num = 5
 
 json_path = "src/jd/data_files/filter.json"
