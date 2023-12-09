@@ -4,10 +4,22 @@ from openpyxl.styles import Alignment
 from openpyxl.utils import get_column_letter
 import time
 import os
+import shutil
 
-file_name = "data/jd/merge/986.xlsx"
+file_name = "data/jd/merge/merge_2_3_8_9.xlsx"
 num = 5
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
+
+try:
+    copy_file_name = file_name.replace('.xlsx','(副本).xlsx')
+    shutil.copy(file_name, copy_file_name)
+    temp_workbook = load_workbook(copy_file_name)
+    temp_sheet = temp_workbook.active
+    for row in range(2, temp_sheet.max_row+1):
+        temp_sheet.cell(row=row, column=16, value='')
+    temp_workbook.save(copy_file_name)
+except:
+    print(f'\n出错')
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -31,6 +43,8 @@ try:
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         value = sheet.cell(row=row, column=7).value
+        if sheet.cell(row=row, column=16).value != None:
+            continue
         image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
         if os.path.exists(image_path):
             try:

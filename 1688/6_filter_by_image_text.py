@@ -4,14 +4,10 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 import re
-import json
 
-file_name = "data/pdd/merge/1514.xlsx"
-num = 3
+file_name = "data/jd/merge/184.xlsx"
+num = 6
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
-
-recent_json_path = "src/pdd/data_files/recent_filter.json"
-whitelist_json_path = "src/pdd/data_files/whitelist_filter.json"
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -27,42 +23,19 @@ first_row = sheet[1]
 for cell in first_row:
     new_sheet[cell.coordinate].value = cell.value
 
-# 通过店铺白名单筛选
+# 筛选出符合条件的行
 try:
-    def convert_string_to_number(string):
-        if not string:
-            return 0
-        if isinstance(string, int):
-            return string
-        if string.endswith('万+'):
-            number = float(string[:-2]) * 10000
-        elif string.endswith('万'):
-            number = float(string[:-1]) * 10000
-        elif string.endswith('+'):
-            number = float(string[:-1])
-        else:
-            number = float(string)
-        return number
-    def check_keywords1(text):
-        keywords = ['移动电源','充电器','数据线','充电宝']
+    list = []
+    def check_keywords_image_text(text):
+        keywords = ['官方同款']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
-    def check_keywords2(text):
-        keywords = ['HUAWEI','华为']
+    def check_keywords_goods_name(text):
+        keywords = ['原厂','正品','原装','官方']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
-    list = ['华为官方旗舰店','荣耀官方旗舰店','天天特卖工厂店','天猫超市','绿联数码旗舰店']
-    
-    # 读取白名单店铺信息
-    with open(whitelist_json_path, encoding='utf-8') as file:
-        white_list = json.load(file)
-    # 读取最近店铺信息
-    with open(recent_json_path, encoding='utf-8') as file:
-        recent_list = json.load(file)
-
-    record_list = []
     start_row = 2
     end_row = sheet.max_row
 
@@ -70,36 +43,38 @@ try:
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在通过店铺白名单筛选')
+    print(f'\n正在筛选出符合条件的行')
     for row in range(start_row, end_row + 1):
-        shop_name = sheet.cell(row=row, column=4).value
-        goods_title = sheet.cell(row=row, column=8).value
-        goods_nums = sheet.cell(row=row, column=12).value
-        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in recent_list and check_keywords1(goods_title) and check_keywords2(goods_title):
-            record_list.append(row)
+        current+=1
+        res = (total - current) / (current / ((time.time() - start_time) / 60))
+        print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
+        sentence = sheet.cell(row=row, column=16).value
+        sentence2 = sheet.cell(row=row, column=8).value
+        if not sentence is None and check_keywords_image_text(sentence):
+            list.append(row)
 except Exception as e:
     print(e)
-    print('通过店铺白名单筛选时出错')
+    print('筛选出符合条件的行时出错')
 
-# 记录数据到新表
+# 通过图片文字筛选
 try:
     start_row = 2
     end_row = sheet.max_row
 
-    total = len(record_list)
+    total = len(list)
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在记录数据到新表')
-    for row in record_list:
+    print(f'\n正在通过图片文字筛选')
+    for row in list:
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        for cell in sheet[row]:
+        for cell in sheet[row][:-2]:
             new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
-    print('记录数据到新表时出错')
+    print('通过图片文字筛选时出错')
 
 # 处理序号
 try:
@@ -122,7 +97,7 @@ except Exception as e:
 
 new_workbook.save(new_file_name)
 
-# 修改文件名
+# # 修改文件名
 # try:
 #     temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
 #     os.rename(file_name, temp_file_name)

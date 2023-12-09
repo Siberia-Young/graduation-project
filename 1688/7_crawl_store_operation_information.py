@@ -14,21 +14,15 @@ import hmac
 from urllib.parse import urlencode
 import json
 import requests
-from tools import import_store_information
-from tools import export_store_information
 
 
 APPId = "b9b55ac3"  # 控制台获取
 APISecret = "NzA4N2QxMDNlZjQzMzk5YjUzYzM5NzM3"  # 控制台获取
 APIKey = "602f362334c3f47d5c626652e91f25dc"  # 控制台获取
 
-file_name = 'data/jd/merge/merge_2_3.xlsx'
+file_name = 'data/jd/merge/6907.xlsx'
 row_height = 40
 column_width = 14
-
-# 从以前记录的店铺经营主体信息的json文件中导入
-import_store_information.import_store_information(file_name)
-
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -212,7 +206,7 @@ try:
                         for item in temp_list:
                             code_list.append(item['words'][0]['content'])
                         # code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
-                        code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('ұ', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't').replace('*', 'x').replace('&', '8')
+                        code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('ұ', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
                     except:
                         print('遇到验证码')
                         driver.get(url)
@@ -263,6 +257,3 @@ finally:
     print(f"已获取数量：{current} 条")
     unit = current / (duration / 60)
     print(f"每分钟爬取数量：{unit:.2f} 条")
-
-    # 导出新记录到店铺经营主体信息的json文件
-    export_store_information.export_store_information(file_name)

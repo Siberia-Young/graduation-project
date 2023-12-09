@@ -4,8 +4,9 @@ from openpyxl.styles import Font
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 import time
+import os
 
-file_name = "data/jd/merge/文件4_(965).xlsx"
+file_name = "data/jd/merge/outcome/文件5.xlsx"
 num = 11
 
 row_height = 40
@@ -140,3 +141,4 @@ except Exception as e:
 finally:
     # 保存文件
     workbook.save(file_name)
+    os.rename(file_name,file_name.replace('.xlsx',f'_({total}条).xlsx'))

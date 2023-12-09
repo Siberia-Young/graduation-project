@@ -5,7 +5,7 @@ from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 import time
 
-file_name = "data/pdd/merge/pdd_2023-12-07/文件5_(8).xlsx"
+file_name = "data/jd/merge/文件4_(5506).xlsx"
 num = 11
 
 row_height = 40

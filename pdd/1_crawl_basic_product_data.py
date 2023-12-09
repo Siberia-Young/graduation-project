@@ -21,7 +21,7 @@ column_width = 14
 
 # 读取JSON文件
 list = []
-with open('data/pdd/json/华为开放式耳机.json', 'r', encoding='utf-8') as file:
+with open('data/pdd/json/移动电源+华为通用.json', 'r', encoding='utf-8') as file:
     list = json.load(file)
 
 keyword = input('请输入关键词：')

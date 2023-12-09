@@ -4,8 +4,8 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/jd/merge/merge_2_3.xlsx"
-num = 8
+file_name = "data/jd/merge/5506.xlsx"
+num = 9
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
 # 打开需读取的excel表
@@ -22,7 +22,7 @@ first_row = sheet[1]
 for cell in first_row:
     new_sheet[cell.coordinate].value = cell.value
 
-# 分类并排序
+# 分类
 try:
     dict = {}
     start_row = 2
@@ -32,8 +32,7 @@ try:
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在分类并排序')
-    # 分类
+    print(f'\n正在分类')
     for row in range(start_row, end_row + 1):
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
@@ -43,25 +42,32 @@ try:
             dict[value].append(row)
         else:
             dict[value] = [row]
-    # 排序
-    def sort_condition(item):
-        return sheet.cell(row=item, column=14).value
-    for key, val in dict.items():
-        val.sort(key=sort_condition, reverse=True)
 except Exception as e:
     print(e)
-    print('分类并排序时出错')
+    print('分类时出错')
 
-# 记录到新表
+# 通过店铺内商品总销售额筛选并记录到新表
 try:
     start_row = 2
     end_row = sheet.max_row
 
-    total = end_row - start_row + 1
+    total = 0
+    keys_to_delete = []
+    for key, val in dict.items():
+        sum = 0
+        for row in val:
+            value = sheet.cell(row=row, column=14).value
+            sum += value
+        if sum < 800000:
+            keys_to_delete.append(key)
+        else:
+            total += len(val)
+    for key in keys_to_delete:
+        del dict[key]
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在记录数据到新表')
+    print(f'\n正在通过店铺内商品总销售额筛选并记录到新表')
     for key, val in dict.items():
         for row in val:
             current+=1
@@ -71,14 +77,14 @@ try:
                 new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
-    print('记录到新表时出错')
+    print('通过店铺内商品总销售额筛选并记录到新表时出错')
 
 # 处理序号
 try:
     start_row = 2
     end_row = new_sheet.max_row
 
-    total = end_row - start_row + 1
+    total = total
     current = 0
     start_time = time.time()
     time.sleep(1)
@@ -94,7 +100,7 @@ except Exception as e:
 
 new_workbook.save(new_file_name)
 
-# 修改文件名
+# # 修改文件名
 # try:
 #     temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
 #     os.rename(file_name, temp_file_name)

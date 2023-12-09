@@ -3,7 +3,7 @@ import time
 import requests
 import os
 
-file_name = "data/jd/merge/merge_2_3_8_9.xlsx"
+file_name = "data/jd/merge/986.xlsx"
 num = 4
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
 
