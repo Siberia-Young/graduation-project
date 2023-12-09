@@ -7,7 +7,7 @@ from random import randint
 import re
 import json
 
-file_name = "data/pdd/merge/359.xlsx"
+file_name = "data/pdd/merge/merge_2_3_8_9.xlsx"
 num = 4
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
 
@@ -55,7 +55,7 @@ try:
         value = sheet.cell(row=row, column=7).value
         # item = data[randint(0,29)]
         # ip = item['ip']+':'+str(item['port'])
-        ip = '183.7.116.233:45151'
+        # ip = '183.7.116.233:45151'
 
         # res = requests.get('http://d.jghttp.alicloudecs.com/getip?num=1&type=2&pro=320000&city=320700&yys=0&port=1&time=9&ts=0&ys=0&cs=0&lb=1&sb=0&pb=5&mr=1&regions=')
         # if res.status_code == 200:
@@ -65,8 +65,8 @@ try:
         # else:
         #     print('请求失败，状态码:', res.status_code)
         #     response = requests.get(value)
-        response = requests.get(value,proxies={'http':ip,'https':ip},headers=headers)
-        # response = requests.get(value)
+        # response = requests.get(value,proxies={'http':ip,'https':ip},headers=headers)
+        response = requests.get(value)
         if response.status_code == 200:
             image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
             with open(image_path, 'wb') as file:

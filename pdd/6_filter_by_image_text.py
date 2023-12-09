@@ -6,7 +6,7 @@ import os
 from openpyxl.utils.cell import get_column_letter
 import re
 
-file_name = "data/pdd/merge/359.xlsx"
+file_name = "data/pdd/merge/merge_2_3_8_9.xlsx"
 num = 6
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'

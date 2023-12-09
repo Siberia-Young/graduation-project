@@ -4,11 +4,22 @@ from openpyxl.styles import Alignment
 from openpyxl.utils import get_column_letter
 import time
 import os
-import re
+import shutil
 
-file_name = "data/pdd/merge/359.xlsx"
+file_name = "data/pdd/merge/merge_2_3_8_9.xlsx"
 num = 5
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
+
+try:
+    copy_file_name = file_name.replace('.xlsx','(副本).xlsx')
+    shutil.copy(file_name, copy_file_name)
+    temp_workbook = load_workbook(copy_file_name)
+    temp_sheet = temp_workbook.active
+    for row in range(2, temp_sheet.max_row+1):
+        temp_sheet.cell(row=row, column=16, value='')
+    temp_workbook.save(copy_file_name)
+except:
+    print(f'\n出错')
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -36,8 +47,14 @@ try:
             continue
         image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
         if os.path.exists(image_path):
-            result = reader.readtext(image_path, detail = 0, paragraph=True)
-            sheet.cell(row=row, column=16, value=' '.join(result))
+            try:
+                result = reader.readtext(image_path, detail = 0, paragraph=True)
+                sheet.cell(row=row, column=16, value=' '.join(result))
+            except Exception as e:
+                print(e)
+                print(f'识别出错：{row}')
+        else:
+            print(f'找不到图片路径：{row}')
 except Exception as e:
     print(e)
     print('出错')
