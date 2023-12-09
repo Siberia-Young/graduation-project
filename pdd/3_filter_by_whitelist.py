@@ -6,11 +6,11 @@ from openpyxl.utils.cell import get_column_letter
 import re
 import json
 
-file_name = "data/pdd/merge/1514.xlsx"
+file_name = "data/pdd/merge/merge_2.xlsx"
 num = 3
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
-recent_json_path = "src/pdd/data_files/recent_filter.json"
+recent_json_path = "src/pdd/data_files/recent_info/recent_filter.json"
 whitelist_json_path = "src/pdd/data_files/whitelist_filter.json"
 
 # 打开需读取的excel表
@@ -44,7 +44,7 @@ try:
             number = float(string)
         return number
     def check_keywords1(text):
-        keywords = ['移动电源','充电器','数据线','充电宝']
+        keywords = ['充电器','数据线']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -53,7 +53,6 @@ try:
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
-    list = ['华为官方旗舰店','荣耀官方旗舰店','天天特卖工厂店','天猫超市','绿联数码旗舰店']
     
     # 读取白名单店铺信息
     with open(whitelist_json_path, encoding='utf-8') as file:

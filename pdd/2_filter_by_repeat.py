@@ -3,7 +3,7 @@ from openpyxl import Workbook
 import time
 import os
 
-file_name = "data/pdd/merge/1880.xlsx"
+file_name = "data/pdd/merge/merge.xlsx"
 num = 2
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 

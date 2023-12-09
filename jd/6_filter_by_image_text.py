@@ -65,7 +65,7 @@ try:
             image_path = os.path.join(folder_path, file_name)
             if os.path.exists(image_path):
                 break
-        if not sentence is None and (check_keywords_image_text(sentence) or image_match(base_img, image_path)):
+        if not sentence is None and (image_match(base_img, image_path)):
             list.append(row)
 except Exception as e:
     print(e)
