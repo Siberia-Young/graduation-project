@@ -4,7 +4,7 @@ import time
 import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/jd/merge/merge_2_3.xlsx"
+file_name = "data/jd/merge/6907.xlsx"
 num = 8
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 

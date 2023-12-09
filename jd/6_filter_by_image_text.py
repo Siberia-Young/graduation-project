@@ -1,13 +1,17 @@
 from openpyxl import load_workbook
 from openpyxl import Workbook
 import time
+import cv2
 import os
 from openpyxl.utils.cell import get_column_letter
 import re
 
-file_name = "data/jd/merge/184.xlsx"
+file_name = "data/jd/merge/merge_2_3_8_9.xlsx"
 num = 6
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
+folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
+base_img = cv2.imread('src/HUAWEI.jpg')
+image_extensions = ['jpeg', 'png', 'jpg', 'webp']
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -27,15 +31,22 @@ for cell in first_row:
 try:
     list = []
     def check_keywords_image_text(text):
-        keywords = ['官方同款']
+        keywords = ['huawei']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
-    def check_keywords_goods_name(text):
-        keywords = ['原厂','正品','原装','官方']
-        pattern = '|'.join(keywords)
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        return match is not None
+    def image_match(base_img, image_path):
+        if not os.path.isfile(image_path):
+            return False
+        target_img = cv2.imread(image_path)
+        for i in range(5, 15):#循环变化模板大小
+            temp = cv2.resize(base_img, None, fx=i * 0.02, fy=i * 0.02, interpolation=cv2.INTER_AREA)
+            result = cv2.matchTemplate(target_img, temp, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            if (max_val >= 0.75):
+                return True
+        return False
+    
     start_row = 2
     end_row = sheet.max_row
 
@@ -49,8 +60,12 @@ try:
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         sentence = sheet.cell(row=row, column=16).value
-        sentence2 = sheet.cell(row=row, column=8).value
-        if not sentence is None and check_keywords_image_text(sentence):
+        for extension in image_extensions:
+            file_name = '{}.{}'.format(row, extension)
+            image_path = os.path.join(folder_path, file_name)
+            if os.path.exists(image_path):
+                break
+        if not sentence is None and (check_keywords_image_text(sentence) or image_match(base_img, image_path)):
             list.append(row)
 except Exception as e:
     print(e)

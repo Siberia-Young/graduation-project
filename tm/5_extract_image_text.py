@@ -33,6 +33,8 @@ try:
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         value = sheet.cell(row=row, column=7).value
+        if sheet.cell(row=row, column=16).value != None:
+            continue
         image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
         if os.path.exists(image_path):
             result = reader.readtext(image_path, detail = 0, paragraph=True)

@@ -3,22 +3,30 @@ from openpyxl import Workbook
 import time
 import os
 from openpyxl.utils.cell import get_column_letter
+import datetime
 import json
+import shutil
 
-file_name = "data/pdd/2023-11-30/pdd_2023-11-30/文件5.1_(3).xlsx"
+file_name = "data/jd/2023-12-07(2)/jd_2023-12-07(2)/文件5_(57).xlsx"
 num = 5
 
-json_path = "src/pdd/data_files/filter.json"
+base_file_name = "src/jd/data_files/recent_info/recent_filter.json"
+
+try:
+    current_time = datetime.datetime.now()
+    time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
+    copy_file_name = base_file_name.replace('.json',f'_{time_string}.json')
+    shutil.copy(file_name, copy_file_name)
+except:
+    print(f'\n出错')
+
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
 sheet = workbook.active
 
-# 读取现有店铺信息
-with open(json_path, encoding='utf-8') as file:
-    list = json.load(file)
-
 # 记录数据到json
 try:
+    list = []
     start_row = 2
     end_row = sheet.max_row
 
@@ -32,10 +40,9 @@ try:
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         value = sheet.cell(row=row, column=4).value
-        if value not in list:
-            list.append(value)
+        list.append(value)
 except Exception as e:
     print(e)
 finally:
-   with open(json_path, 'w', encoding='utf-8') as file:
+   with open(base_file_name, 'w', encoding='utf-8') as file:
         json.dump(list, file, indent=4, ensure_ascii=False)
