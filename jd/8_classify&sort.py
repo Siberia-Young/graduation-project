@@ -52,12 +52,99 @@ except Exception as e:
     print(e)
     print('分类并排序时出错')
 
+# 筛选同商品不同规格的情况
+try:
+    def common_prefix_suffix_length(str1, str2):
+        prefix_length = 0
+        suffix_length = 0
+        while prefix_length < len(str1) and prefix_length < len(str2):
+            if str1[prefix_length] == str2[prefix_length]:
+                prefix_length += 1
+            else:
+                break
+        while suffix_length < len(str1) and suffix_length < len(str2):
+            if str1[-suffix_length - 1] == str2[-suffix_length - 1]:
+                suffix_length += 1
+            else:
+                break
+        return [prefix_length+suffix_length, (len(str1) + len(str2)) / 2]
+    
+    def similarity_rate(base_list, target):
+        match_list = []
+        for item in base_list:
+            if target != '':
+                if target == item:
+                    match_list.append(1)
+                    break
+                else:
+                    [common_length, average_length] = common_prefix_suffix_length(target, item)
+                    if common_length == 0:
+                        match_list.append(0)
+                    else:
+                        match_list.append(common_length / average_length)
+            else:
+                match_list.append(0)
+        return match_list
+
+    def goods_title_match(base_list, target, degree = 0.95):
+        contain = False
+        index = -1
+        match_list = similarity_rate(base_list, target)
+        if len(match_list) == len(base_list):
+            for key, val in enumerate(match_list):
+                if val >= degree:
+                    contain = True
+                    if index == -1 or (index != -1 and val > match_list[index]):
+                        index = key
+        else:
+            contain = True
+            index = len(match_list) - 1
+        if contain:
+            return [contain, base_list[index]]
+        else:
+            return [contain, None]
+        
+    start_row = 2
+    end_row = sheet.max_row
+
+    total = end_row - start_row + 1
+    current = 0
+    start_time = time.time()
+    time.sleep(1)
+    print(f'\n正在筛选同商品不同规格的情况')
+    for key, val in dict.items():
+        new_dict = {}
+        for row in val:
+            current+=1
+            goods_title = sheet.cell(row=row, column=8).value
+            [contain, position] = goods_title_match(list(new_dict.keys()), goods_title)
+            if contain:
+                new_dict[position].append(row)
+            else:
+                new_dict[goods_title] = [row]
+        res_list = []
+        for new_key, new_val in new_dict.items():
+            max_sales = 0
+            res = new_val[0]
+            for row in new_val:
+                goods_sales = sheet.cell(row=row, column=14).value
+                if goods_sales > max_sales:
+                    max_sales = goods_sales
+                    res = row
+            res_list.append(res)
+        dict[key] = res_list
+except Exception as e:
+    print(e)
+    print('筛选同商品不同规格的情况时出错')
+
 # 记录到新表
 try:
     start_row = 2
     end_row = sheet.max_row
 
-    total = end_row - start_row + 1
+    total = 0
+    for key, val in dict.items():
+        total += len(val)
     current = 0
     start_time = time.time()
     time.sleep(1)

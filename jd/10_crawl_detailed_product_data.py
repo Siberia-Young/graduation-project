@@ -7,9 +7,23 @@ from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 import time
 from selenium.webdriver.common.proxy import Proxy, ProxyType
+import shutil
+import cv2
 
-filename = "data/jd/merge/merge_2_3_8_9_6_9.xlsx"
-workbook = load_workbook(filename)
+file_name = "data/jd/merge/merge_2_3_8_9_6_9.xlsx"
+
+try:
+    copy_file_name = file_name.replace('.xlsx','(副本).xlsx')
+    shutil.copy(file_name, copy_file_name)
+    temp_workbook = load_workbook(copy_file_name)
+    temp_sheet = temp_workbook.active
+    for row in range(2, temp_sheet.max_row+1):
+        temp_sheet.cell(row=row, column=16, value='')
+    temp_workbook.save(copy_file_name)
+except:
+    print(f'\n出错')
+
+workbook = load_workbook(file_name)
 sheet = workbook.active
 start_time = time.time()
 
@@ -32,6 +46,16 @@ driver = webdriver.Remote(command_executor="http://127.0.0.1:4444", options=opti
 # driver = webdriver.Firefox(options=options)
 
 try:
+    def image_match(base_path, target_path):
+        base_img = cv2.imread(base_path)
+        target_img = cv2.imread(target_path)
+        result = cv2.matchTemplate(target_img, base_img, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        print(max_val)
+        if (max_val >= 0.99):
+            return True
+        return False
+    
     count = 0
     end = False
     while count != 0 or end == False:
@@ -87,10 +111,24 @@ try:
                     goods_brand_element = tempSoup.find_all('ul',id='parameter-brand')
                     goods_brand = len(goods_brand_element) == 0 and '暂无' or goods_brand_element[0].select('li a')[0].text
                     sheet.cell(row=row, column=9, value=goods_brand)
-                    # item = tempSoup.select('div.p-parameter')
-                    # sheet.cell(row=row, column=16, value=item[0].text)
+                    
+                    choose = tempSoup.select('div.li.p-choose:not(.hide)')
+                    choose_text_list = []
+                    for item in choose:
+                        choose_list = item.select('div.dd div a')
+                        for item1 in choose_list:
+                            choose_text_list.append(item1.text.strip())
+                    sheet.cell(row=row, column=17, value=''.join(choose_text_list))
 
-
+                    detail_img = tempSoup.select('div.spec-items ul.lh li img')
+                    if len(detail_img) != 0:
+                        img_src = 'https:' + detail_img[0].get('src')[:-5]
+                        base_src = sheet.cell(row=row, column=7).value
+                        src1 = '/'.join(img_src.split('/')[-2:]).split('.')[0]
+                        src2 = '/'.join(base_src.split('/')[-2:]).split('.')[0]
+                        if src1 != src2:
+                            sheet.cell(row=row, column=18, value='different')
+                    
                     # if sheet.cell(row=row, column=4).value is None:
                     #     shop_element = tempSoup.select('div.popbox-inner h3 a')
                         
@@ -106,7 +144,7 @@ try:
                     #     shop_link_cell.hyperlink = shop_link
                     #     sheet.cell(row=row, column=5, value=shop_link)
                 except:
-                    workbook.save(filename)
+                    workbook.save(file_name)
                     driver.quit()
                     print('与现有浏览器连接断开')
             else:
@@ -118,7 +156,7 @@ except Exception as e:
     print('主动中断')
 finally:
     # 保存文件
-    workbook.save(filename)
+    workbook.save(file_name)
     driver.quit()
     print('与现有浏览器连接断开')
     end_time = time.time()

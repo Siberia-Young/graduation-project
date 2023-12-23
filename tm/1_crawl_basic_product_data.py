@@ -29,6 +29,7 @@ def login(driver):
 
 def scrape_multiple_pages(keyword, start_page, end_page):
     options = webdriver.FirefoxOptions()
+    options.add_argument("--headless")
     driver = webdriver.Remote(
         command_executor="http://127.0.0.1:4444", options=options)
     # 创建带有Selenium Wire的Firefox WebDriver对象

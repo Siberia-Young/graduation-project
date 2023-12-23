@@ -7,8 +7,8 @@ from random import randint
 import re
 import json
 
-file_name = "data/pdd/拼多多_华为手表_2023-11-06_18-32-40.xlsx"
-# file_name = "data/tm/需求1_天猫_2023-11-22_18-15-08_(2031).xlsx"
+# file_name = "data/pdd/拼多多_华为手表_2023-11-06_18-32-40.xlsx"
+file_name = "data/tm/需求1_天猫_2023-11-22_18-15-08_(2031).xlsx"
 num = 4
 match = re.search(r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}", file_name)
 folder_path = "/".join(file_name.split("/")[:-1]) + '/aimages_' + match.group()

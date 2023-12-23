@@ -58,7 +58,7 @@ try:
         for row in val:
             value = sheet.cell(row=row, column=14).value
             sum += value
-        if sum < 800000:
+        if sum < 500000:
             keys_to_delete.append(key)
         else:
             total += len(val)

@@ -65,7 +65,7 @@ try:
             image_path = os.path.join(folder_path, file_name)
             if os.path.exists(image_path):
                 break
-        if not sentence is None and (image_match(base_img, image_path)):
+        if not sentence is None and (check_keywords_image_text(sentence) or image_match(base_img, image_path)):
             list.append(row)
 except Exception as e:
     print(e)
@@ -85,7 +85,7 @@ try:
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        for cell in sheet[row][:-2]:
+        for cell in sheet[row][:14]:
             new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
