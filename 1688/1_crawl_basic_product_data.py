@@ -15,6 +15,7 @@ import time
 import random
 import datetime
 import re
+import math
 
 min_delay = 3  # 最小延迟时间（单位：秒）
 max_delay = 5  # 最大延迟时间（单位：秒）
@@ -36,6 +37,7 @@ def scrape_multiple_pages(keyword, start_page, end_page):
         command_executor="http://127.0.0.1:4444", options=options)
     # options = webdriver.FirefoxOptions()
     # driver = webdriver.Firefox(options=options)
+    # driver = webdriver.Edge()
 
     # 创建带有Selenium Wire的Firefox WebDriver对象
     # options = webdriver.FirefoxOptions()
@@ -64,7 +66,7 @@ def scrape_multiple_pages(keyword, start_page, end_page):
     workbook.save(file_name)
 
     # 通过构造url来访问关键词的搜索结果，等待部分时间加载页面，用bs4来解析页面
-    driver.get("https://s.1688.com/selloffer/offer_search.htm?keywords="+keyword+"&beginPage=1&sortType=va_rmdarkgmv30")
+    driver.get("https://s.1688.com/selloffer/offer_search.htm?keywords="+keyword+"&sortType=va_rmdarkgmv30")
     time.sleep(2)
     html = driver.execute_script(
         "return document.documentElement.outerHTML")
@@ -100,9 +102,11 @@ def scrape_multiple_pages(keyword, start_page, end_page):
             except:
                 print('更新最大页数时出错')
             # 不断更新total_num和record_num用于最后能爬取的商品数和实际记录的商品数的统计
-            [single_total_num, single_record_num] = scrape_single_page(driver, keyword, page, file_name, headers)
+            [single_total_num, single_record_num] = scrape_single_page(driver, keyword, start_page, page, file_name, headers)
             total_num += single_total_num
             record_num += single_record_num
+            if single_total_num == 0:
+                break
         except Exception as e:
             print(e)
             driver.quit()
@@ -126,7 +130,7 @@ def scrape_multiple_pages(keyword, start_page, end_page):
     return [total_num, record_num]
 
 # scrape_single_page函数用于爬取单页的商品信息，并将数据经过部分条件筛选后记录到excel表
-def scrape_single_page(driver, keyword, page, file_name, headers):
+def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
     # 加载之前创建的excel表
     workbook = load_workbook(file_name)
     sheet = workbook.active
@@ -141,15 +145,24 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
 
     print("正在记录第"+str(page)+"页")
 
-    # 通过构造url来访问关键词下搜索得到的每页商品数据
-    searchUrl = "https://s.1688.com/selloffer/offer_search.htm?keywords="+keyword+"&beginPage="+str(page)+"&sortType=va_rmdarkgmv30"
-    driver.get(searchUrl)
-
+    # # 通过构造url来访问关键词下搜索得到的每页商品数据
+    # searchUrl = "https://s.1688.com/selloffer/offer_search.htm?keywords="+keyword+"&beginPage="+str(page)+"&sortType=va_rmdarkgmv30"
+    # driver.get(searchUrl)
+    try:
+        if(page!=start_page):
+            button = driver.find_element("xpath", "//a[contains(@class, 'fui-next')]")
+            driver.execute_script("document.querySelector('a.fui-next').style.position = 'relative';")
+            driver.execute_script("document.querySelector('a.fui-next').style.zIndex = '99999';")
+            button.click()
+            time.sleep(2)
+    except Exception as e:
+        print(e)
+        print('点击下一页时出错')
     try:
         # 缓慢下拉页面
         scroll_height = driver.execute_script("return document.body.scrollHeight;")
         current_height = 0
-        scroll_speed = 300  # 每次下拉的距离
+        scroll_speed = 500  # 每次下拉的距离
         while current_height < scroll_height:
             driver.execute_script(f"window.scrollTo(0, {current_height});")
             current_height += scroll_speed
@@ -172,7 +185,7 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             goods_elements = element.select('div.mojar-element-image a')
             goods_titles = element.select('div.mojar-element-title a div.title')
             goods_prices = element.select('div.showPricec div.price')
-            goods_commits = element.select('div.p-commit strong a')
+            goods_sales = element.select('div.sale div.count')
 
             total_num += 1
             # 筛选
@@ -181,10 +194,15 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                     continue
             if len(shop_elements) == 0:
                 continue
+            if(len(goods_prices) == 0):
+                continue
             
-            # 筛选掉评论数不足200的商品
-            if(len(goods_commits) != 0):
-                if convert_string_to_number(goods_commits[0].text and goods_commits[0].text or '0') < 200:
+            # 筛选掉销售额为0的商品
+            if(len(goods_sales) != 0):
+                if goods_sales[0].text == '':
+                    continue
+            if(len(goods_prices) != 0):
+                if not is_float(goods_prices[0].text):
                     continue
             record_num += 1
             
@@ -297,7 +315,7 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                                 # goods_img_url_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                                 # goods_img_url_cell.font = Font(underline="single", color="0563C1")
                                 # goods_img_url_cell.hyperlink = goods_img_url
-                                sheet.cell(row=last_row, column=last_column, value=goods_img_url)
+                                sheet.cell(row=last_row, column=last_column, value=goods_img_url.replace("?_=2020",""))
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -364,50 +382,55 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
             
-            # # 销售量
-            # try:
-            #     last_column+=1
-            #     # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-            #     # sheet.row_dimensions[last_row].height = row_height
-            #     # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-            #     # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-            # except:
-            #     print(f'记录“{headers[last_column-1]}”时出错')
-            #     return
+            # 销售量
+            try:
+                last_column+=1
+                if len(goods_sales) != 0:
+                    goods_sales_text = goods_sales[0].text
+                    if (goods_sales_text.startswith('成交') and goods_sales_text.endswith('元')):
+                        goods_sales_text = goods_sales_text.replace('成交','').replace('元','')
+                    else:
+                        goods_sales_text = '0'
+                    goods_num = convert_string_to_number(goods_sales_text)/float(goods_price)
+                    sheet.cell(row=last_row, column=last_column, value=math.ceil(goods_num))
+                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                # sheet.row_dimensions[last_row].height = row_height
+                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+            except:
+                print(f'记录“{headers[last_column-1]}”时出错')
+                return
             
-            # # 商品评论数
-            # try:
-            #     last_column+=1
-            #     if (len(goods_commits) != 0):
-            #         goods_commit = goods_commits[0].text and goods_commits[0].text or '0'
-            #         # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-            #         # sheet.row_dimensions[last_row].height = row_height
-            #         # goods_commit_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-            #         # goods_commit_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-            #         sheet.cell(row=last_row, column=last_column, value=goods_commit)
-            #     else:
-            #         sheet.cell(row=last_row, column=last_column, value='0')
-            # except:
-            #     print(f'记录“{headers[last_column-1]}”时出错')
-            #     return
+            # 商品评论数
+            try:
+                last_column+=1
+                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                # sheet.row_dimensions[last_row].height = row_height
+                # goods_commit_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                # goods_commit_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+            except:
+                print(f'记录“{headers[last_column-1]}”时出错')
+                return
             
-            # # 销售额
-            # try:
-            #     last_column+=1
-            #     if (len(goods_prices) != 0 and len(goods_commits) != 0):
-            #         goods_price = is_float(goods_prices[0].text) and float(goods_prices[0].text) or 0
-            #         goods_commit = convert_string_to_number(goods_commits[0].text)
-            #         goods_sales = goods_price * goods_commit
-            #         # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-            #         # sheet.row_dimensions[last_row].height = row_height
-            #         # goods_sales_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-            #         # goods_sales_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-            #         sheet.cell(row=last_row, column=last_column, value=goods_sales)
-            #     else:
-            #         sheet.cell(row=last_row, column=last_column, value='0')
-            # except:
-            #     print(f'记录“{headers[last_column-1]}”时出错')
-            #     return
+            # 销售额
+            try:
+                last_column+=1
+                if (len(goods_sales) != 0):
+                    goods_sales_text = goods_sales[0].text
+                    if (goods_sales_text.startswith('成交') and goods_sales_text.endswith('元')):
+                        # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
+                        # sheet.row_dimensions[last_row].height = row_height
+                        # goods_sales_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
+                        # goods_sales_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
+                        goods_sales = convert_string_to_number(goods_sales_text.replace('成交','').replace('元',''))
+                        sheet.cell(row=last_row, column=last_column, value=goods_sales)
+                    else:
+                        sheet.cell(row=last_row, column=last_column, value='0')
+                else:
+                    sheet.cell(row=last_row, column=last_column, value='0')
+            except:
+                print(f'记录“{headers[last_column-1]}”时出错')
+                return
             
     except Exception as e:
         print(e)
@@ -484,8 +507,10 @@ if __name__ == "__main__":
     # start_page为电商平台分页展示搜索结果，爬取的开始页数
     # end_page为电商平台分页展示搜索结果，爬取的结束页数
     # total_num和record_num分别为整个过程爬取的商品条数和真正记录到excel表的商品条数
-    keyword = urllib.parse.quote("华为手表", encoding='GBK')
-    start_page = 1
-    end_page = 1
-    [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)
-    print(f"共找到 {total_num} 条数据，经过筛选，已记录 {record_num} 条数据")
+    keywords = ['华为专用充电器']
+    for keyword in  keywords:
+        keyword = urllib.parse.quote(keyword, encoding='GBK')
+        start_page = 1
+        end_page = 100
+        [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)
+        print(f"共找到 {total_num} 条数据，经过筛选，已记录 {record_num} 条数据")

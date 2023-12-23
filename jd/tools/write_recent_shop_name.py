@@ -7,7 +7,7 @@ import datetime
 import json
 import shutil
 
-file_name = "data/jd/2023-12-07(2)/jd_2023-12-07(2)/文件5_(57).xlsx"
+file_name = "data/jd/2023-12-21/merge/jd_2023-12-21/文件5_(163条).xlsx"
 num = 5
 
 base_file_name = "src/jd/data_files/recent_info/recent_filter.json"
@@ -16,7 +16,7 @@ try:
     current_time = datetime.datetime.now()
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
     copy_file_name = base_file_name.replace('.json',f'_{time_string}.json')
-    shutil.copy(file_name, copy_file_name)
+    shutil.copy(base_file_name, copy_file_name)
 except:
     print(f'\n出错')
 
@@ -40,9 +40,11 @@ try:
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         value = sheet.cell(row=row, column=4).value
-        list.append(value)
+        if value not in list:
+            list.append(value)
 except Exception as e:
     print(e)
 finally:
+   print(f'\n最近店铺数有：{len(list)}')
    with open(base_file_name, 'w', encoding='utf-8') as file:
         json.dump(list, file, indent=4, ensure_ascii=False)

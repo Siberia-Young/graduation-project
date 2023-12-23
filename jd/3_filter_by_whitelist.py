@@ -12,6 +12,7 @@ num = 3
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 recent_json_path = "src/jd/data_files/recent_info/recent_filter.json"
 whitelist_json_path = "src/jd/data_files/whitelist_filter.json"
+confirm_json_path = "src/jd/data_files/confirm_filter.json"
 
 # 打开需读取的excel表
 workbook = load_workbook(file_name)
@@ -42,7 +43,7 @@ try:
             number = int(string)
         return number
     def check_keywords1(text):
-        keywords = ['充电器','数据线']
+        keywords = ['原厂','海思芯','4k','智慧屏']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -55,6 +56,9 @@ try:
     # 读取白名单店铺信息
     with open(whitelist_json_path, encoding='utf-8') as file:
         white_list = json.load(file)
+    # 读取无需筛选店铺信息
+    with open(confirm_json_path, encoding='utf-8') as file:
+        confirm_list = json.load(file)
     # 读取最近店铺信息
     with open(recent_json_path, encoding='utf-8') as file:
         recent_list = json.load(file)
@@ -72,7 +76,7 @@ try:
         shop_name = sheet.cell(row=row, column=4).value
         goods_title = sheet.cell(row=row, column=8).value
         goods_nums = sheet.cell(row=row, column=13).value
-        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in recent_list and check_keywords1(goods_title) and check_keywords2(goods_title):
+        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in confirm_list and shop_name not in recent_list and check_keywords1(goods_title) and check_keywords2(goods_title):
             record_list.append(row)
         # if sheet.cell(row=row, column=15).value != 'delete':
         #     record_list.append(row)

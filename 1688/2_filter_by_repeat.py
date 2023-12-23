@@ -2,8 +2,9 @@ from openpyxl import load_workbook
 from openpyxl import Workbook
 import time
 import os
+from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/jd/merge/22414.xlsx"
+file_name = "data/1688/merge/merge.xlsx"
 num = 2
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
@@ -21,9 +22,9 @@ first_row = sheet[1]
 for cell in first_row:
     new_sheet[cell.coordinate].value = cell.value
 
-# 通过商品链接进行筛选去重并记录到新excel表
+# 通过商品链接进行筛选去重
 try:
-    list = []
+    dict = {}
     start_row = 2
     end_row = sheet.max_row
 
@@ -31,41 +32,37 @@ try:
     current = 0
     start_time = time.time()
     time.sleep(1)
-    print(f'\n正在比对去重并记录到新的excel表')
+    print(f'\n正在比对去重')
     for row in range(start_row, end_row + 1):
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         value = sheet.cell(row=row, column=10).value
-        if value not in list:
-            list.append(value)
-            for cell in sheet[row]:
-                new_sheet[cell.coordinate].value = cell.value
+        if value not in dict:
+            dict[value] = row
 except Exception as e:
     print(e)
-    print('通过商品链接进行筛选去重并记录到新excel表时出错')
+    print('通过商品链接进行筛选去重时出错')
 
-# 删除新excel表空白行
+# 记录到新表
 try:
-    list = []
-    print(f'\n正在删除空白行')
-    for row in range(start_row, end_row + 1):
-        value = new_sheet.cell(row=row, column=1).value
-        if(value==None):
-            list.append(row)
+    start_row = 2
+    end_row = sheet.max_row
 
-    total = len(list)
+    total = len(dict)
     current = 0
     start_time = time.time()
     time.sleep(1)
-    for row in reversed(list):
+    print(f'\n正在记录到新表')
+    for row in dict.values():
         current+=1
         res = (total - current) / (current / ((time.time() - start_time) / 60))
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
-        new_sheet.delete_rows(row)
+        for cell in sheet[row]:
+            new_sheet[f"{get_column_letter(cell.column)}{current+1}"].value = cell.value
 except Exception as e:
     print(e)
-    print('删除新excel表空白行时出错')
+    print('记录到新表时出错')
 
 # 处理序号
 try:

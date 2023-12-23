@@ -44,7 +44,7 @@ try:
             number = float(string)
         return number
     def check_keywords1(text):
-        keywords = ['充电器','数据线']
+        keywords = ['耳机','骨传导']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
