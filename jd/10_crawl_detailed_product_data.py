@@ -12,16 +12,16 @@ import cv2
 
 file_name = "data/jd/merge/merge_2_3_8_9_6_9.xlsx"
 
-try:
-    copy_file_name = file_name.replace('.xlsx','(副本).xlsx')
-    shutil.copy(file_name, copy_file_name)
-    temp_workbook = load_workbook(copy_file_name)
-    temp_sheet = temp_workbook.active
-    for row in range(2, temp_sheet.max_row+1):
-        temp_sheet.cell(row=row, column=16, value='')
-    temp_workbook.save(copy_file_name)
-except:
-    print(f'\n出错')
+# try:
+#     copy_file_name = file_name.replace('.xlsx','(副本).xlsx')
+#     shutil.copy(file_name, copy_file_name)
+#     temp_workbook = load_workbook(copy_file_name)
+#     temp_sheet = temp_workbook.active
+#     for row in range(2, temp_sheet.max_row+1):
+#         temp_sheet.cell(row=row, column=16, value='')
+#     temp_workbook.save(copy_file_name)
+# except:
+#     print(f'\n出错')
 
 workbook = load_workbook(file_name)
 sheet = workbook.active
