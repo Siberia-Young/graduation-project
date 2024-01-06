@@ -2,14 +2,7 @@ from selenium import webdriver
 from openpyxl import Workbook
 from bs4 import BeautifulSoup
 from openpyxl import load_workbook
-from openpyxl.drawing.image import Image
-from openpyxl.styles import Alignment
-from openpyxl.styles import Font
-from openpyxl.styles import PatternFill
-from openpyxl.utils import get_column_letter
-from io import BytesIO
 import os
-import requests
 import urllib.parse
 import time
 import random
@@ -206,10 +199,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             try:
                 last_column+=1
                 ordinal = last_row-1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # ordinal_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # ordinal_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                 sheet.cell(row=last_row, column=last_column, value=ordinal)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -219,10 +208,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             try:
                 last_column+=1
                 platform_name = '京东'
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # current_time_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # current_time_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                 sheet.cell(row=last_row, column=last_column, value=platform_name)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -232,10 +217,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             try:
                 last_column+=1
                 search_keyword = urllib.parse.unquote(keyword)
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # search_keyword_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # search_keyword_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                 sheet.cell(row=last_row, column=last_column, value=search_keyword)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -246,10 +227,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 last_column+=1
                 if (len(shop_elements) != 0):
                     shop_name = shop_elements[0].text
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # shop_name_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # shop_name_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=shop_name)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -262,12 +239,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 last_column+=1
                 if (len(shop_elements) != 0):
                     shop_link = 'https:' + shop_elements[0].get('href')
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # shop_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # shop_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    # shop_link_cell.font = Font(underline="single", color="0563C1")
-                    # shop_link_cell.hyperlink = shop_link
                     sheet.cell(row=last_row, column=last_column, value=shop_link)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -278,10 +249,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             # 店铺经营主体信息
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -301,12 +268,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                             goods_img_url = 'https:' + (goods_elements[0].select('img')[0].get('data-lazy-img'))
                             if goods_img_url.endswith('.avif'):
                                 goods_img_url = goods_img_url[:-5]
-                        # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                        # sheet.row_dimensions[last_row].height = row_height
-                        # goods_img_url_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                        # goods_img_url_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                        # goods_img_url_cell.font = Font(underline="single", color="0563C1")
-                        # goods_img_url_cell.hyperlink = goods_img_url
                         sheet.cell(row=last_row, column=last_column, value=goods_img_url)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -317,10 +278,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 last_column+=1
                 if (len(goods_titles) != 0):
                     goods_title = goods_titles[0].text
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # shop_title_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # shop_title_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=goods_title)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -332,10 +289,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             # 商品品牌
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -345,12 +298,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 last_column+=1
                 if (len(goods_elements) != 0):
                     goods_link = 'https:' + goods_elements[0].get('href')
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    # goods_link_cell.font = Font(underline="single", color="0563C1")
-                    # goods_link_cell.hyperlink = goods_link
                     sheet.cell(row=last_row, column=last_column, value=goods_link)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -363,10 +310,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 last_column+=1
                 if (len(goods_prices) != 0):
                     goods_price = goods_prices[0].text
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_price_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_price_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=goods_price)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -377,10 +320,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
             # 销售量
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -390,10 +329,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                 last_column+=1
                 if (len(goods_commits) != 0):
                     goods_commit = goods_commits[0].text and goods_commits[0].text or '0'
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_commit_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_commit_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=goods_commit)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='0')
@@ -408,10 +343,6 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
                     goods_price = is_float(goods_prices[0].text) and float(goods_prices[0].text) or 0
                     goods_commit = convert_string_to_number(goods_commits[0].text)
                     goods_sales = goods_price * goods_commit
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_sales_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_sales_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=goods_sales)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='0')
@@ -489,15 +420,12 @@ def is_float(string):
     except ValueError:
         return False
 
-if __name__ == "__main__":
+def crawl_basic_product_data(keywords, start_page = 1, end_page = 200):
     # keyword为搜索的关键词，依照该关键词到电商平台获取相关商品信息
     # start_page为电商平台分页展示搜索结果，爬取的开始页数
     # end_page为电商平台分页展示搜索结果，爬取的结束页数
     # total_num和record_num分别为整个过程爬取的商品条数和真正记录到excel表的商品条数
-    keywords = ['荣耀手机后盖','荣耀专属手机壳','honor手机壳','荣耀手机后盖+荣耀专属手机壳','荣耀手机后盖+honor手机壳','荣耀专属手机壳+honor手机壳']
     for keyword in  keywords:
         keyword = urllib.parse.quote(keyword)
-        start_page = 1
-        end_page = 200
         [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)
         print(f"共找到 {total_num} 条数据，经过筛选，已记录 {record_num} 条数据")

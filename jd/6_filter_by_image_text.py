@@ -31,7 +31,7 @@ for cell in first_row:
 try:
     list = []
     def check_keywords_image_text(text):
-        keywords = ['huawei']
+        keywords = ['荣耀','honor']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -65,7 +65,7 @@ try:
             image_path = os.path.join(folder_path, file_name)
             if os.path.exists(image_path):
                 break
-        if not sentence is None and (check_keywords_image_text(sentence) or image_match(base_img, image_path)):
+        if not sentence is None and (check_keywords_image_text(sentence)):
             list.append(row)
 except Exception as e:
     print(e)

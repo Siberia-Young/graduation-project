@@ -6,7 +6,7 @@ import os
 from openpyxl.utils.cell import get_column_letter
 import re
 
-file_name = "data/tb/merge/merge_2_3_8_9.xlsx"
+file_name = "data/tb/merge/merge_2_3_8.xlsx"
 num = 6
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 folder_path = "/".join(file_name.split("/")[:-1]) + '/images'
@@ -31,7 +31,7 @@ for cell in first_row:
 try:
     list = []
     def check_keywords_image_text(text):
-        keywords = ['huawei']
+        keywords = ['honor','荣耀']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -65,7 +65,7 @@ try:
             image_path = os.path.join(folder_path, file_name)
             if os.path.exists(image_path):
                 break
-        if not sentence is None and (check_keywords_image_text(sentence) or image_match(base_img, image_path)):
+        if not sentence is None and (check_keywords_image_text(sentence)):
             list.append(row)
 except Exception as e:
     print(e)
