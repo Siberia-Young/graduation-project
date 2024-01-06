@@ -43,12 +43,12 @@ try:
             number = int(string)
         return number
     def check_keywords1(text):
-        keywords = ['原厂','海思芯','4k','智慧屏']
+        keywords = ['手机壳','后盖']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
     def check_keywords2(text):
-        keywords = ['HUAWEI','华为']
+        keywords = ['honor','荣耀']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None

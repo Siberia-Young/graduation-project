@@ -445,9 +445,9 @@ def remove_unrecognized_characters(string):
     return ''.join(char for char in string if char.isprintable())
 
 if __name__ == "__main__":
-    # options = webdriver.FirefoxOptions()
-    # driver = webdriver.Remote(
-    #     command_executor="http://127.0.0.1:4444", options=options)
+    options = webdriver.FirefoxOptions()
+    driver = webdriver.Remote(
+        command_executor="http://127.0.0.1:4444", options=options)
     # 创建带有Selenium Wire的Firefox WebDriver对象
     # options = webdriver.FirefoxOptions()
     # options.set_preference('network.proxy.type', 1)
@@ -461,15 +461,15 @@ if __name__ == "__main__":
     # driver = webdriver.Remote(
     #     command_executor="http://127.0.0.1:4444", options=options)
     # driver.maximize_window()
-    driver = webdriver.Firefox()
-    login(driver)
+    # driver = webdriver.Firefox()
+    # login(driver)
     print("登录成功")
 
     # url = 'https://s.taobao.com/search'
     url = input('请输入网址：')
     driver.get(url)
 
-    keywords = ['华为原厂+华为4k','海思芯+华为4k']
+    keywords = ['荣耀手机后盖','荣耀专属手机壳','honor手机壳','荣耀手机后盖+荣耀专属手机壳','荣耀手机后盖+honor手机壳','荣耀专属手机壳+honor手机壳']
     for keyword in  keywords:
         keyword = urllib.parse.quote(keyword)
         start_page = 1

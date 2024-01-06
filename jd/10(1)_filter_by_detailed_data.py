@@ -46,10 +46,12 @@ try:
     for row in range(start_row, end_row + 1):
         delete = sheet.cell(row=row, column=15).value
         choose = sheet.cell(row=row, column=17).value
-        differ = sheet.cell(row=row, column=18).value
-        # if delete != 'delete' and (check_keywords(choose) or differ == 'different'):
+        parameter = sheet.cell(row=row, column=18).value
+        differ = sheet.cell(row=row, column=19).value
+        # if delete != 'delete' and (check_keywords(choose) or check_keywords(parameter) or differ == 'different'):
         #     record_list.append(row)
-        record_list.append(row)
+        if delete != 'delete':
+            record_list.append(row)
 except Exception as e:
     print(e)
     print('通过详细信息筛选时出错')

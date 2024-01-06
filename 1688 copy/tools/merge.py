@@ -24,7 +24,7 @@ def merge(new_file_name, folder_path):
         if filename.endswith(".xlsx"):
             file_num += 1
     
-     # 处理表头
+    # 处理表头
     headers = ['序号', '电商平台', '关键词/产品', '店铺名称(全称)', '店铺网址', '店铺经营主体信息', '商品图片', '商品标题', '实际品牌', '商品链接', '价格(单位：元)', '销售量(单位：件)', '商品评价(单位：个)', '销售额(单位：元)']
     new_sheet.append(headers)
     new_workbook.save(new_file_name)

@@ -53,7 +53,7 @@ try:
         print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
         value = sheet.cell(row=row, column=7).value
 
-        ip = '183.7.15.147:45151'
+        ip = '116.26.6.24:45151'
 
         response = requests.get(value,proxies={'http':ip,'https':ip},headers=headers)
         # response = requests.get(value)

@@ -43,12 +43,12 @@ try:
             number = int(string)
         return number
     def check_keywords1(text):
-        keywords = ['原厂','海思芯','4k','智慧屏']
+        keywords = ['手机壳','后盖']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
     def check_keywords2(text):
-        keywords = ['HUAWEI','华为']
+        keywords = ['honor','荣耀']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None
@@ -76,7 +76,7 @@ try:
         shop_name = sheet.cell(row=row, column=4).value
         goods_title = sheet.cell(row=row, column=8).value
         goods_nums = sheet.cell(row=row, column=13).value
-        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in confirm_list and shop_name not in recent_list and check_keywords1(goods_title) and check_keywords2(goods_title):
+        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in confirm_list and shop_name not in recent_list and check_keywords2(goods_title):
             record_list.append(row)
         # if sheet.cell(row=row, column=15).value != 'delete':
         #     record_list.append(row)
