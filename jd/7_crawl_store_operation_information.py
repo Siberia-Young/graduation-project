@@ -22,7 +22,7 @@ APPId = "b9b55ac3"  # 控制台获取
 APISecret = "NzA4N2QxMDNlZjQzMzk5YjUzYzM5NzM3"  # 控制台获取
 APIKey = "602f362334c3f47d5c626652e91f25dc"  # 控制台获取
 
-file_name = 'data/jd/merge/merge_2_3.xlsx'
+file_name = 'data/jd/merge/merge.xlsx'
 row_height = 40
 column_width = 14
 

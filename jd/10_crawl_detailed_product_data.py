@@ -115,7 +115,10 @@ try:
                             goods_brand = goods_brand.replace('品牌：', '').replace('\n', '').replace('\r', '').replace(' ', '')
                         else:
                             goods_brand = "暂无"
-                        sheet.cell(row=row, column=9, value=goods_brand)
+                    else:
+                        goods_brand = "暂无"
+                    
+                    sheet.cell(row=row, column=9, value=goods_brand)
                     
                     choose = tempSoup.select('div.li.p-choose:not(.hide)')
                     choose_text_list = []
@@ -133,14 +136,15 @@ try:
                             parameter_text_list.append(item1.text.strip())
                     sheet.cell(row=row, column=18, value='\n'.join(parameter_text_list))
 
-                    detail_img = tempSoup.select('div.spec-items ul.lh li img')
-                    if len(detail_img) != 0:
-                        img_src = 'https:' + detail_img[0].get('src')[:-5]
-                        base_src = sheet.cell(row=row, column=7).value
-                        src1 = '/'.join(img_src.split('/')[-2:]).split('.')[0]
-                        src2 = '/'.join(base_src.split('/')[-2:]).split('.')[0]
-                        if src1 != src2:
-                            sheet.cell(row=row, column=19, value='different')
+                    more_imgs = tempSoup.select('div.spec-items ul.lh li img')
+                    if len(more_imgs) != 0:
+                        imgs_list = []
+                        for img in more_imgs:
+                            img_src = 'https:' + img.get('src').replace('.avif','').replace('/n5/','/n1/')
+                            imgs_list.append(img_src)
+                        sheet.cell(row=row, column=19, value='\n'.join(imgs_list))
+                    
+                    
                     
                     # if sheet.cell(row=row, column=4).value is None:
                     #     shop_element = tempSoup.select('div.popbox-inner h3 a')

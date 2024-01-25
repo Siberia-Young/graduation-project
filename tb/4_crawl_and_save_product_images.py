@@ -55,8 +55,8 @@ try:
 
         ip = '116.26.6.24:45151'
 
-        response = requests.get(value,proxies={'http':ip,'https':ip},headers=headers)
-        # response = requests.get(value)
+        # response = requests.get(value,proxies={'http':ip,'https':ip},headers=headers)
+        response = requests.get(value)
         if response.status_code == 200:
             image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
             with open(image_path, 'wb') as file:

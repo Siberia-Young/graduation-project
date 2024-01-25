@@ -31,7 +31,7 @@ for cell in first_row:
 try:
     list = []
     def check_keywords(text):
-        keywords = ['huawei']
+        keywords = ['huawei','华为']
         pattern = '|'.join(keywords)
         match = re.search(pattern, text, flags=re.IGNORECASE)
         return match is not None

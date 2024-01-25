@@ -106,14 +106,15 @@ def scrape_multiple_pages(keyword, start_page, end_page):
             total_num += single_total_num
             record_num += single_record_num
 
-            if single_total_num == 0:
+            verify = soup.select('div.verifyBtn')
+            while len(verify) != 0:
                 firefox_window = gw.getWindowsWithTitle("Mozilla Firefox")[0]
                 firefox_window.minimize()
                 firefox_window.maximize()
                 firefox_window.activate()
                 time.sleep(5)
                 page-=1
-            elif single_total_num != 0 and single_record_num == 0:
+            if single_total_num != 0 and single_record_num == 0:
                 break
         except Exception as e:
             print(e)
@@ -494,7 +495,7 @@ if __name__ == "__main__":
     # start_page为电商平台分页展示搜索结果，爬取的开始页数
     # end_page为电商平台分页展示搜索结果，爬取的结束页数
     # total_num和record_num分别为整个过程爬取的商品条数和真正记录到excel表的商品条数
-    keywords = ['荣耀手机后盖','荣耀专属手机壳','honor手机壳','荣耀手机后盖+荣耀专属手机壳','荣耀手机后盖+honor手机壳','荣耀专属手机壳+honor手机壳']
+    keywords = ['荣耀手机']
     for keyword in  keywords:
         keyword = urllib.parse.quote(keyword)
         start_page = 1
