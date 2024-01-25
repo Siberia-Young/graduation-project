@@ -469,7 +469,7 @@ if __name__ == "__main__":
     url = input('请输入网址：')
     driver.get(url)
 
-    keywords = ['荣耀手机后盖','荣耀专属手机壳','honor手机壳','荣耀手机后盖+荣耀专属手机壳','荣耀手机后盖+honor手机壳','荣耀专属手机壳+honor手机壳']
+    keywords = ['华为投影仪','宅趣投','欢乐投','华为4k自动对焦','华为投影仪+宅趣投','华为投影仪+欢乐投','华为投影仪+华为4k自动对焦','宅趣投+欢乐投','宅趣投+华为4k自动对焦','欢乐投+华为4k自动对焦']
     for keyword in  keywords:
         keyword = urllib.parse.quote(keyword)
         start_page = 1

@@ -42,16 +42,20 @@ try:
         else:
             number = int(string)
         return number
-    def check_keywords1(text):
-        keywords = ['手机壳','后盖']
-        pattern = '|'.join(keywords)
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        return match is not None
-    def check_keywords2(text):
-        keywords = ['honor','荣耀']
-        pattern = '|'.join(keywords)
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        return match is not None
+    def check_keywords(text, keywords1, keywords2=None, keywords3=None):
+            temp = False
+            pattern1 = '|'.join(keywords1)
+            match1 = re.search(pattern1, text, flags=re.IGNORECASE)
+            temp = match1 is not None
+            if keywords2 is not None:
+                pattern2 = '|'.join(keywords2)
+                match2 = re.search(pattern2, text, flags=re.IGNORECASE)
+                temp = match1 is not None and match2 is not None
+            if keywords3 is not None:
+                pattern3 = '|'.join(keywords3)
+                match3 = re.search(pattern3, text, flags=re.IGNORECASE)
+                return temp or match3 is not None
+            return temp
     
     # 读取白名单店铺信息
     with open(whitelist_json_path, encoding='utf-8') as file:
@@ -76,7 +80,7 @@ try:
         shop_name = sheet.cell(row=row, column=4).value
         goods_title = sheet.cell(row=row, column=8).value
         goods_nums = sheet.cell(row=row, column=12).value
-        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in confirm_list and shop_name not in recent_list and check_keywords1(goods_title) and check_keywords2(goods_title):
+        if convert_string_to_number(goods_nums) >= 200 and shop_name not in white_list and shop_name not in confirm_list and shop_name not in recent_list and check_keywords(goods_title,['投影仪','4k'], ['huawei','华为'], ['宅趣投','欢乐投']):
             record_list.append(row)
         # if sheet.cell(row=row, column=15).value != 'delete':
         #     record_list.append(row)
