@@ -38,26 +38,22 @@ def crawl_and_save_product_images(file_name):
             # ip = input('请输入ip和端口：')
             ip = '111.177.63.86:8888'
             fail_list = []
-            start_row = 2
-            end_row = sheet.max_row
 
-            total = end_row - start_row + 1
+            total = len(my_list)
             current = 0
             start_time = time.time()
             time.sleep(1)
             print(f'\n正在下载图片')
-            total = len(my_list)
             for row in my_list:
                 current+=1
                 res = (total - current) / (current / ((time.time() - start_time) / 60))
                 print(f"\r当前进度：{current}/{total}，预计仍需：{res:.2f} min", end="")
                 value = sheet.cell(row=row, column=7).value
-
-
+                
                 response = requests.get(value,proxies={'http':ip,'https':ip},headers=headers)
                 # response = requests.get(value)
                 if response.status_code == 200:
-                    image_path = os.path.join(folder_path, f'{row}.{value.split(".")[-1]}')
+                    image_path = os.path.join(folder_path, f'{row}.{value.replace("?_=2020","").split(".")[-1]}')
                     with open(image_path, 'wb') as file:
                         file.write(response.content)
                 else:
@@ -82,4 +78,4 @@ def crawl_and_save_product_images(file_name):
         unit = current / (duration / 60)
         print(f"每分钟下载数量：{unit:.2f} 条")
 
-    print(f'下载失败：{fail_list}{len(fail_list)}')
+    print(f'下载失败：{fail_list}')

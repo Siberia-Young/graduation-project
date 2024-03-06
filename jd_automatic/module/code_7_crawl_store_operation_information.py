@@ -200,31 +200,33 @@ def crawl_store_operation_information(file_name):
                             }
                         }
 
-                        request_url = assemble_ws_auth_url(temp_url, "POST", APIKey, APISecret)
-                        headers = {'content-type': "application/json", 'host': 'api.xf-yun.com', 'app_id': APPId}
-                        response = requests.post(request_url, data=json.dumps(body), headers=headers)
-                        tempResult = json.loads(response.content.decode())
-                        finalResult = base64.b64decode(tempResult['payload']['result']['text']).decode()
-                        finalResult = json.loads(finalResult.replace(" ", "").replace("\n", "").replace("\t", "").strip())    
-                        try:
-                            temp_list = finalResult['pages'][0]['lines']
-                            code_list = []
-                            for item in temp_list:
-                                code_list.append(item['words'][0]['content'])
-                            # code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
-                            code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('ұ', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't').replace('*', 'x').replace('&', '8')
-                        except:
-                            print('遇到验证码')
-                            driver.get(url)
-                            time.sleep(5)
-                            continue
-                        verifyCodeInput = driver.find_element("xpath","//input[@id='verifyCode']")
-                        driver.execute_script("arguments[0].setAttribute('autocomplete', 'off')", verifyCodeInput)
-                        verifyCodeInput.send_keys(code)
-                        time.sleep(2)
-                        sutmit = driver.find_element("xpath","//button[contains(@class, 'btn') and @type='submit']")
-                        sutmit.click()
-                        time.sleep(1)
+                        # request_url = assemble_ws_auth_url(temp_url, "POST", APIKey, APISecret)
+                        # headers = {'content-type': "application/json", 'host': 'api.xf-yun.com', 'app_id': APPId}
+                        # response = requests.post(request_url, data=json.dumps(body), headers=headers)
+                        # tempResult = json.loads(response.content.decode())
+                        # finalResult = base64.b64decode(tempResult['payload']['result']['text']).decode()
+                        # finalResult = json.loads(finalResult.replace(" ", "").replace("\n", "").replace("\t", "").strip())    
+                        # try:
+                        #     temp_list = finalResult['pages'][0]['lines']
+                        #     code_list = []
+                        #     for item in temp_list:
+                        #         code_list.append(item['words'][0]['content'])
+                        #     # code = finalResult['pages'][0]['lines'][0]['words'][0]['content'].replace('-', '').replace('￥', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't')
+                        #     code = ''.join(code_list).replace('-', '').replace('￥', 'Y').replace('ұ', 'Y').replace('(', 'C').replace('（', 'C').replace('+', 't').replace('*', 'x').replace('&', '8')
+                        # except:
+                        #     print('遇到验证码')
+                        #     driver.get(url)
+                        #     time.sleep(5)
+                        #     continue
+                        # verifyCodeInput = driver.find_element("xpath","//input[@id='verifyCode']")
+                        # driver.execute_script("arguments[0].setAttribute('autocomplete', 'off')", verifyCodeInput)
+                        # verifyCodeInput.send_keys(code)
+                        # time.sleep(2)
+                        # sutmit = driver.find_element("xpath","//button[contains(@class, 'btn') and @type='submit']")
+                        # sutmit.click()
+                        # time.sleep(1)
+
+                        time.sleep(10)
 
                         tempHTML = driver.execute_script("return document.documentElement.outerHTML")
                         tempSoup = BeautifulSoup(tempHTML, "html.parser")

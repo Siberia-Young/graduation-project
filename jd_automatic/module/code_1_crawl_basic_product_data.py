@@ -99,14 +99,6 @@ def scrape_multiple_pages(keyword, start_page, end_page):
             total_num += single_total_num
             record_num += single_record_num
 
-            verify = soup.select('div.verifyBtn')
-            while len(verify) != 0:
-                firefox_window = gw.getWindowsWithTitle("Mozilla Firefox")[0]
-                firefox_window.minimize()
-                firefox_window.maximize()
-                firefox_window.activate()
-                time.sleep(5)
-                page-=1
             if single_total_num != 0 and single_record_num == 0:
                 break
         except Exception as e:
@@ -156,16 +148,18 @@ def scrape_single_page(driver, keyword, page, file_name, headers):
 
     html = driver.execute_script(
         "return document.documentElement.outerHTML")
-    soup = BeautifulSoup(html, "html.parser")
-
-    # verify = soup.select('div.verifyBtn')
-    # while(len(verify)!=0):
-    #     driver.get(searchUrl)
-    #     html = driver.execute_script(
-    #         "return document.documentElement.outerHTML")
-    #     soup = BeautifulSoup(html, "html.parser")
-    #     time.sleep(2)
-    #     verify = soup.select('div.verifyBtn')
+    soup = BeautifulSoup(html, "html.parser") 
+    verify = soup.select('div.verifyBtn')
+    while len(verify) != 0:
+        firefox_window = gw.getWindowsWithTitle("Mozilla Firefox")[0]
+        firefox_window.minimize()
+        firefox_window.maximize()
+        firefox_window.activate()
+        time.sleep(7)
+        html = driver.execute_script(
+            "return document.documentElement.outerHTML")
+        soup = BeautifulSoup(html, "html.parser") 
+        verify = soup.select('div.verifyBtn')
         
     # 通过bs4得到整个页面解析得来的单个商品元素构成的列表
     elements = soup.select('li.gl-item')

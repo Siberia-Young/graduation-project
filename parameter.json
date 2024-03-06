@@ -1,54 +1,9 @@
 {
-    "keywords": [
-        "HUWIMA",
-        "HVA",
-        "HUWIHUAWI",
-        "HVAWI",
-        "HUAV",
-        "HUAIWEI",
-        "HUAWE",
-        "HVIWI",
-        "HUVWI",
-        "HUANWEI"
-    ],
+    "keywords": ["荣耀充电器+荣耀通用智慧屏","荣耀数据线+荣耀通用智慧屏"],
     "relatedwords": [
-        ["huawei", "华为"],
-        ["huawei", "华为"],
-        [
-            "HAEWI",
-            "HUAU",
-            "HU∧V",
-            "HUAWO",
-            "HUVE",
-            "HUVWI",
-            "HUWI",
-            "HUWIMA",
-            "HVA",
-            "HUWIHUAWI",
-            "HVAWI",
-            "HUAV",
-            "HUAIWEI",
-            "HUAWE",
-            "HVIWI",
-            "HUVWI",
-            "HUANWEI"
-        ]
+        ["移动电源", "充电器", "数据线", "智慧屏"],
+        ["honor", "荣耀"],
+        []
     ],
-    "graphicwords": ["huawei", "华为","HAEWI",
-    "HUAU",
-    "HU∧V",
-    "HUAWO",
-    "HUVE",
-    "HUVWI",
-    "HUWI",
-    "HUWIMA",
-    "HVA",
-    "HUWIHUAWI",
-    "HVAWI",
-    "HUAV",
-    "HUAIWEI",
-    "HUAWE",
-    "HVIWI",
-    "HUVWI",
-    "HUANWEI"]
+    "graphicwords": ["honor", "荣耀"]
 }

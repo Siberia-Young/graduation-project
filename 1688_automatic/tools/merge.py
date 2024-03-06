@@ -3,9 +3,6 @@ from openpyxl import Workbook
 import time
 import os
 from openpyxl.utils.cell import get_column_letter
-from openpyxl.styles import Alignment
-from openpyxl.styles import Font
-from openpyxl.styles import PatternFill
 
 row_height = 40
 column_width = 14
