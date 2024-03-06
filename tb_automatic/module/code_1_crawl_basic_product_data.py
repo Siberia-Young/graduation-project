@@ -444,7 +444,7 @@ def has_unrecognized_characters(string):
 def remove_unrecognized_characters(string):
     return ''.join(char for char in string if char.isprintable())
 
-def crawl_basic_product_data(keywords, start_page = 1, end_page = 200):
+def crawl_basic_product_data(keywords, start_page = 1, end_page = 100):
     options = webdriver.FirefoxOptions()
     driver = webdriver.Remote(
         command_executor="http://127.0.0.1:4444", options=options)

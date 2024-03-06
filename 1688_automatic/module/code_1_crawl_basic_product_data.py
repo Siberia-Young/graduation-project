@@ -30,25 +30,7 @@ def login(driver):
     time.sleep(30)
 
 # scrape_multiple_pages函数用于爬取按照关键词产生的商品从start_page到end_page的分页数据
-def scrape_multiple_pages(keyword, start_page, end_page):
-    # 打开一个连接固定端口的浏览器模拟器用于保持状态
-    options = webdriver.FirefoxOptions()
-    driver = webdriver.Remote(
-        command_executor="http://127.0.0.1:4444", options=options)
-    # options = webdriver.FirefoxOptions()
-    # driver = webdriver.Firefox(options=options)
-    # driver = webdriver.Edge()
-
-    # 创建带有Selenium Wire的Firefox WebDriver对象
-    # options = webdriver.FirefoxOptions()
-    # options.set_preference('network.proxy.type', 1)
-    # options.set_preference('network.proxy.http', 'localhost')
-    # options.set_preference('network.proxy.http_port', 8888)
-    # driver = webdriver.Firefox(options=options)
-
-    # login(driver)
-    print("登录成功")
-
+def scrape_multiple_pages(driver, keyword, start_page, end_page):
     # 获取当前时间并格式化时间字符串，将其作为文件名一部分
     current_time = datetime.datetime.now()
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
@@ -116,9 +98,7 @@ def scrape_multiple_pages(keyword, start_page, end_page):
             driver.quit()
             print('用户主动中断爬虫，与现有浏览器连接断开')
             break
-
-    driver.quit()
-    print('与现有浏览器连接断开')
+        
     # 重命名文件
     new_file_name = f"data/1688/1688_{urllib.parse.unquote(keyword, encoding='GBK')}_{time_string}_({record_num} of {total_num}).xlsx"
     try:
@@ -215,10 +195,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             try:
                 last_column+=1
                 ordinal = last_row-1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # ordinal_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # ordinal_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                 sheet.cell(row=last_row, column=last_column, value=ordinal)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -228,10 +204,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             try:
                 last_column+=1
                 platform_name = '1688'
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # current_time_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # current_time_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                 sheet.cell(row=last_row, column=last_column, value=platform_name)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -241,11 +213,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             try:
                 last_column+=1
                 search_keyword = urllib.parse.unquote(keyword, encoding='GBK')
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # search_keyword_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # search_keyword_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                sheet.cell(row=last_row, column=last_column, value=search_keyword)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -255,10 +222,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 last_column+=1
                 if (len(shop_elements) != 0):
                     shop_name = shop_elements[0].get('title')
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # shop_name_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # shop_name_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=shop_name)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -273,12 +236,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                     shop_link_elements = shop_elements[0].select('a')
                     if (len(shop_link_elements) != 0):
                         shop_link = shop_link_elements[0].get('href')
-                        # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                        # sheet.row_dimensions[last_row].height = row_height
-                        # shop_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                        # shop_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                        # shop_link_cell.font = Font(underline="single", color="0563C1")
-                        # shop_link_cell.hyperlink = shop_link
                         sheet.cell(row=last_row, column=last_column, value=shop_link)
                     else:
                         sheet.cell(row=last_row, column=last_column, value='')
@@ -291,10 +248,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 店铺经营主体信息
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -310,12 +263,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                             goods_img_url = re.search(r"url\(.*?[\'\"](.*?)['\"]\)", goods_img_url_style)
                             if goods_img_url:
                                 goods_img_url = goods_img_url.group(1)
-                                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                                # sheet.row_dimensions[last_row].height = row_height
-                                # goods_img_url_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                                # goods_img_url_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                                # goods_img_url_cell.font = Font(underline="single", color="0563C1")
-                                # goods_img_url_cell.hyperlink = goods_img_url
                                 sheet.cell(row=last_row, column=last_column, value=goods_img_url.replace("?_=2020",""))
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -326,10 +273,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 last_column+=1
                 if (len(goods_titles) != 0):
                     goods_title = goods_titles[0].text
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # shop_title_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # shop_title_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=goods_title)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -341,10 +284,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 商品品牌
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -354,12 +293,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 last_column+=1
                 if (len(goods_elements) != 0):
                     goods_link = goods_elements[0].get('href')
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_link_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_link_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
-                    # goods_link_cell.font = Font(underline="single", color="0563C1")
-                    # goods_link_cell.hyperlink = goods_link
                     sheet.cell(row=last_row, column=last_column, value=goods_link)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -372,10 +305,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 last_column+=1
                 if (len(goods_prices) != 0):
                     goods_price = goods_prices[0].text
-                    # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                    # sheet.row_dimensions[last_row].height = row_height
-                    # goods_price_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                    # goods_price_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                     sheet.cell(row=last_row, column=last_column, value=goods_price)
                 else:
                     sheet.cell(row=last_row, column=last_column, value='')
@@ -394,10 +323,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                         goods_sales_text = '0'
                     goods_num = convert_string_to_number(goods_sales_text)/float(goods_price)
                     sheet.cell(row=last_row, column=last_column, value=math.ceil(goods_num))
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # manager_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # manager_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except Exception as e:
                 print(e)
                 print(f'记录“{headers[last_column-1]}”时出错')
@@ -406,10 +331,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             # 商品评论数
             try:
                 last_column+=1
-                # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                # sheet.row_dimensions[last_row].height = row_height
-                # goods_commit_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                # goods_commit_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
@@ -420,10 +341,6 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
                 if (len(goods_sales) != 0):
                     goods_sales_text = goods_sales[0].text
                     if (goods_sales_text.startswith('成交') and goods_sales_text.endswith('元')):
-                        # sheet.column_dimensions[get_column_letter(last_column)].width = column_width
-                        # sheet.row_dimensions[last_row].height = row_height
-                        # goods_sales_cell = sheet[f"{get_column_letter(last_column)}{last_row}"]
-                        # goods_sales_cell.alignment = Alignment(wrapText=True, horizontal='center', vertical='center')
                         goods_sales = convert_string_to_number(goods_sales_text.replace('成交','').replace('元',''))
                         sheet.cell(row=last_row, column=last_column, value=goods_sales)
                     else:
@@ -508,9 +425,29 @@ def crawl_basic_product_data(keywords, start_page = 1, end_page = 100):
     # start_page为电商平台分页展示搜索结果，爬取的开始页数
     # end_page为电商平台分页展示搜索结果，爬取的结束页数
     # total_num和record_num分别为整个过程爬取的商品条数和真正记录到excel表的商品条数
+    options = webdriver.FirefoxOptions()
+    driver = webdriver.Remote(
+        command_executor="http://127.0.0.1:4444", options=options)
+    # 创建带有Selenium Wire的Firefox WebDriver对象
+    # options = webdriver.FirefoxOptions()
+    # options.set_preference('network.proxy.type', 1)
+    # options.set_preference('network.proxy.http', 'localhost')
+    # options.set_preference('network.proxy.http_port', 8888)
+    # driver = webdriver.Firefox(options=options)
+
+    # options = webdriver.FirefoxOptions()
+    # options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument("--headless")
+    # driver = webdriver.Remote(
+    #     command_executor="http://127.0.0.1:4444", options=options)
+    # driver.maximize_window()
+    # driver = webdriver.Firefox()
+    # login(driver)
+    print("登录成功")
     for keyword in  keywords:
         keyword = urllib.parse.quote(keyword, encoding='GBK')
-        [total_num, record_num] = scrape_multiple_pages(keyword, start_page, end_page)
+        [total_num, record_num] = scrape_multiple_pages(driver, keyword, start_page, end_page)
         print(f"共找到 {total_num} 条数据，经过筛选，已记录 {record_num} 条数据")
 
-crawl_basic_product_data(['适用华为','适用于华为','适用华为+适用于华为'])
+    driver.quit()
+    print('与现有浏览器连接断开')

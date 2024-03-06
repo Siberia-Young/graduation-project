@@ -7,7 +7,7 @@ from openpyxl.utils.cell import get_column_letter
 import re
 import json
 
-file_name = "data/jd/merge/merge_2_3_8_9_6_9.xlsx"
+file_name = "data/jd/merge/文件5.2.xlsx"
 num = 10
 new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 

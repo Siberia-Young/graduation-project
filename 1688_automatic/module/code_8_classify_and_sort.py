@@ -1,14 +1,12 @@
 from openpyxl import load_workbook
 from openpyxl import Workbook
 import time
-import os
 from openpyxl.utils.cell import get_column_letter
 
-file_name = "data/1688/merge/merge_2_3.xlsx"
 num = 8
-new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 
-def classify_and_sort(file_name, new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'):
+def classify_and_sort(file_name):
+    new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
     # 打开需读取的excel表
     workbook = load_workbook(file_name)
     sheet = workbook.active
@@ -181,13 +179,3 @@ def classify_and_sort(file_name, new_file_name = file_name.replace('.xlsx','_') 
         print('处理序号时出错')
 
     new_workbook.save(new_file_name)
-
-    # 修改文件名
-    # try:
-    #     temp_file_name = "/".join(file_name.split("/")[:-1]) + '/temp.xlsx'
-    #     os.rename(file_name, temp_file_name)
-    #     os.rename(new_file_name, file_name)
-    #     os.rename(temp_file_name, new_file_name)
-    # except Exception as e:
-    #     print(e)
-    #     print('修改文件名时出错')

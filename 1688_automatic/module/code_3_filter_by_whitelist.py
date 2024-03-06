@@ -2,18 +2,17 @@
 from openpyxl import load_workbook
 from openpyxl import Workbook
 import time
-import os
 from openpyxl.utils.cell import get_column_letter
 import re
 import json
 
-file_name = "data/1688/merge/merge_2.xlsx"
 num = 3
-new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
 recent_json_path = "src/1688/data_files/recent_info/recent_filter.json"
 whitelist_json_path = "src/1688/data_files/whitelist_filter.json"
+confirm_json_path = "src/1688/data_files/confirm_filter.json"
 
-def filter_by_whitelist(keywords1, keywords2, file_name, new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'):
+def filter_by_whitelist(keywords1, keywords2, keywords3, file_name):
+    new_file_name = file_name.replace('.xlsx','_') + str(num) + '.xlsx'
     # 打开需读取的excel表
     workbook = load_workbook(file_name)
     sheet = workbook.active
@@ -42,14 +41,27 @@ def filter_by_whitelist(keywords1, keywords2, file_name, new_file_name = file_na
             else:
                 number = int(string)
             return number
-        def check_keywords(text, keywords):
-            pattern = '|'.join(keywords)
-            match = re.search(pattern, text, flags=re.IGNORECASE)
-            return match is not None
+        def check_keywords(text, keywords1, keywords2=[], keywords3=[]):
+            temp = False
+            pattern1 = '|'.join(keywords1)
+            match1 = re.search(pattern1, text, flags=re.IGNORECASE)
+            temp = match1 is not None
+            if len(keywords2) != 0:
+                pattern2 = '|'.join(keywords2)
+                match2 = re.search(pattern2, text, flags=re.IGNORECASE)
+                temp = match1 is not None and match2 is not None
+            if len(keywords3) != 0:
+                pattern3 = '|'.join(keywords3)
+                match3 = re.search(pattern3, text, flags=re.IGNORECASE)
+                return temp or match3 is not None
+            return temp
         
         # 读取白名单店铺信息
         with open(whitelist_json_path, encoding='utf-8') as file:
             white_list = json.load(file)
+        # 读取最近店铺信息
+        with open(recent_json_path, encoding='utf-8') as file:
+            recent_list = json.load(file)
         # 读取最近店铺信息
         with open(recent_json_path, encoding='utf-8') as file:
             recent_list = json.load(file)
@@ -67,7 +79,7 @@ def filter_by_whitelist(keywords1, keywords2, file_name, new_file_name = file_na
             shop_name = sheet.cell(row=row, column=4).value
             goods_title = sheet.cell(row=row, column=8).value
             goods_nums = sheet.cell(row=row, column=13).value
-            if shop_name not in white_list and shop_name not in recent_list and check_keywords(goods_title, keywords1) and check_keywords(goods_title, keywords2):
+            if shop_name not in white_list and shop_name not in recent_list and check_keywords(goods_title, keywords1, keywords2, keywords3):
                 record_list.append(row)
     except Exception as e:
         print(e)

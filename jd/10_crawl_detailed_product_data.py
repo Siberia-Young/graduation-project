@@ -10,7 +10,7 @@ from selenium.webdriver.common.proxy import Proxy, ProxyType
 import shutil
 import cv2
 
-file_name = "data/jd/merge/merge_2_3_8_9_6_9.xlsx"
+file_name = "data/jd/merge/文件5.2.xlsx"
 
 # try:
 #     copy_file_name = file_name.replace('.xlsx','(副本).xlsx')
@@ -88,7 +88,7 @@ try:
                     current_height += scroll_speed
                     scroll_count += 1
                     time.sleep(0.1)  # 等待一段时间，模拟缓慢下拉的效果
-                time.sleep(0.2)
+                time.sleep(1)
             except:
                 print('下拉获取页面信息时发生错误')
 
@@ -167,6 +167,7 @@ try:
             else:
                 sheet.cell(row=row, column=15, value='delete')
             count += 1
+        workbook.save(file_name)
         end = True
 except Exception as e:
     print(e)
