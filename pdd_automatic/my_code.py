@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 import json
+import datetime
 
 from tools import merge
 from module import code_1_crawl_basic_product_data
@@ -19,6 +20,7 @@ platform_name = "pdd"
 source_folder = f"data/{platform_name}"
 destination_folder = f"data/{platform_name}/merge"
 outcome_folder = f"data/{platform_name}/merge/outcome"
+final_folder = f"data/z_submit"
 
 # ready_or_not = 'Y'
 ready_or_not = input(f'请确保已经完成以下准备：\n1.关闭VPN；\n2.删除data/{platform_name}文件夹内所有的xlsx文件；\n3.删除data/{platform_name}文件夹下merge文件夹及其内部所有文件；\n【Y/N】：')
@@ -49,7 +51,6 @@ if ready_or_not == 'Y':
     my_print(1)
     code_1_crawl_basic_product_data.crawl_basic_product_data(keywords)
     start_time = time_lapse(start_time)
-    
     
     # 将爬取的excel表复制一份到merge文件夹下面
     if not os.path.exists(destination_folder):
@@ -116,18 +117,28 @@ if ready_or_not == 'Y':
             file_list.append(source_file)
 
     target_list = ['merge.xlsx', 'merge_2.xlsx', 'merge_2_3.xlsx',
-                   'merge_2_3_8_9(副本).xlsx', 'merge_2_3_8_9_6_9.xlsx']
+                   'merge_2_3_8_9(副本).xlsx', 'merge_2_3_8_9_6_9.xlsx', 'merge_2_3_8_9(副本).xlsx']
     num = 1
-    for path in file_list:
-        filename = path.split('/')[-1]
-        if filename in target_list:
-            destination_file = os.path.join(outcome_folder, '文件'+str(num)+'.xlsx').replace(os.sep, '/')
-            shutil.copy(path, destination_file)
-            num += 1
+    for filename in target_list:
+        for path in file_list:
+            if path.split('/')[-1] == filename:
+                destination_file = os.path.join(outcome_folder, '文件'+str(num)+'.xlsx').replace(os.sep, '/')
+                shutil.copy(path, destination_file)
+                num += 1
 
     my_print(11)
     code_11_cell_style_adjustments.cell_style_adjustments(outcome_folder)
     start_time = time_lapse(start_time)
+
+    for filename in os.listdir(source_folder):
+        if filename.startswith("文件与流程关系图"):
+            from_path = os.path.join(source_folder, filename).replace(os.sep, '/')
+            to_path = os.path.join(outcome_folder, filename).replace(os.sep, '/')
+            shutil.copy(from_path, to_path)
+
+    current_time = datetime.datetime.now()
+    time_string = current_time.strftime("1688_%Y-%m-%d_%H%M%S")
+    shutil.copytree(outcome_folder,os.path.join(final_folder, time_string).replace(os.sep, '/'))
 
     print(f"\n各阶段耗时：{total_time_list}")
     print(f"\n总耗时：{sum(total_time_list)/60:.2f} min")

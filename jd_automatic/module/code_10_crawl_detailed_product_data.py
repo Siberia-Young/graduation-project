@@ -6,6 +6,7 @@ from selenium.webdriver.common.proxy import Proxy, ProxyType
 import shutil
 import cv2
 import time
+import pygetwindow as gw
 
 num = 10
 
@@ -45,7 +46,7 @@ def crawl_detailed_product_data(file_name):
     # driver = webdriver.Firefox(options=options)
 
     # 退出登录
-    driver.get('https://passport.jd.com/uc/login?ltype=logout')
+    # driver.get('https://passport.jd.com/uc/login?ltype=logout')
     time.sleep(2)
 
     try:
@@ -98,11 +99,20 @@ def crawl_detailed_product_data(file_name):
                 tempHTML = driver.execute_script("return document.documentElement.outerHTML")
                 tempSoup = BeautifulSoup(tempHTML, "html.parser")
 
-                # 遇到登录页面或者验证页面跳过，等下一轮再处理
-                login = tempSoup.select('div.login-btn')
+                # 遇到验证页面或者登录页面人工解决
                 verify = tempSoup.select('div.verifyBtn')
-                if len(login) != 0 or len(verify) != 0:
-                    continue
+                login = tempSoup.select('div.login-btn')
+                while len(verify) != 0 or len(login) != 0:
+                    firefox_window = gw.getWindowsWithTitle("Mozilla Firefox")[0]
+                    firefox_window.minimize()
+                    firefox_window.maximize()
+                    firefox_window.activate()
+                    time.sleep(7)
+                    html = driver.execute_script(
+                        "return document.documentElement.outerHTML")
+                    soup = BeautifulSoup(html, "html.parser") 
+                    verify = soup.select('div.verifyBtn')
+                    login = tempSoup.select('div.login-btn')
 
                 elements = tempSoup.select('div.hxm_hide_page')
                 if len(elements) == 0:

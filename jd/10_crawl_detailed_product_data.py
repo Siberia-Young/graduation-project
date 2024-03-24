@@ -10,7 +10,7 @@ from selenium.webdriver.common.proxy import Proxy, ProxyType
 import shutil
 import cv2
 
-file_name = "data/jd/merge/文件5.2.xlsx"
+file_name = "data/jd/merge/outcome/文件5.2.xlsx"
 
 # try:
 #     copy_file_name = file_name.replace('.xlsx','(副本).xlsx')

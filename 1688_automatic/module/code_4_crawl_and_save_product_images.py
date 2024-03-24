@@ -35,8 +35,8 @@ def crawl_and_save_product_images(file_name):
     try:
         comeon = True
         while(comeon):
-            # ip = input('请输入ip和端口：')
-            ip = '111.177.63.86:8888'
+            ip = input('请输入ip和端口：')
+            # ip = '111.177.63.86:8888'
             fail_list = []
 
             total = len(my_list)
