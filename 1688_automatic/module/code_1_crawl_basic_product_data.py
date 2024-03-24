@@ -213,6 +213,7 @@ def scrape_single_page(driver, keyword, start_page, page, file_name, headers):
             try:
                 last_column+=1
                 search_keyword = urllib.parse.unquote(keyword, encoding='GBK')
+                sheet.cell(row=last_row, column=last_column, value=search_keyword)
             except:
                 print(f'记录“{headers[last_column-1]}”时出错')
                 return
